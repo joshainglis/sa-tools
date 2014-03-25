@@ -249,7 +249,7 @@ class Form(with_metaclass(FormMeta, BaseForm)):
         except KeyError:
             super(Form, self).__delattr__(name)
 
-    def validate(self):
+    def validate(self, extra_validators=None):
         """
         Validates the form by calling `validate` on each field, passing any
         extra `Form.validate_<fieldname>` validators to the field validator.

@@ -1,0 +1,55 @@
+{% extends base_layout %}
+
+{% block title %}
+    {% trans %}Add Aid{% endtrans %} - {{ app_name }}
+{% endblock %}
+{% block header_title %}
+    {% trans %}Add Aid{% endtrans %}
+{% endblock %}
+
+{% block content %}
+    {% set show_fields = ['name', 'cost', 'supplier', 'tags'] %}
+    <table>
+        <thead>
+        <tr>
+            {% for fld in show_fields %}
+                <th>{{ fld }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            {% for row in table_data %}
+                <td>{{ row.name }}</td>
+                <td>{{ "$%.2f"|format(row.cost) }}</td>
+                <td>{{ row.supplier.get().name }}</td>
+                <td>
+                    {% for tag in row.tags %}
+                        {{ tag }}<br/>
+                    {% endfor %}
+                </td>
+            {% endfor %}
+        </tr>
+        </tbody>
+
+    </table>
+{% endblock %}
+{% block mediaJS %}
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function () {
+            $(".button").click(function () {
+                var name = $("input#txtValue").val();
+                var dataString = 'txtValue=' + name;
+                $.ajax({
+                    type: "POST",
+                    url: "/tutorial",
+                    data: dataString,
+                    success: function (data) {
+                        $('#display').html(data.text);
+                    }
+                });
+                return false;
+            });
+        });
+    </script>
+{% endblock %}

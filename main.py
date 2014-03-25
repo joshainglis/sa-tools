@@ -13,8 +13,8 @@
 # limitations under the License.
 #
 
-__author__ = 'Rodrigo Augosto (@coto)'
-__website__ = 'www.beecoss.com'
+__author__ = 'Josha Inglis (@josha)'
+__website__ = 'www.sa-tools.appspot.com'
 
 import os
 import sys
@@ -26,7 +26,7 @@ import webapp2
 
 from bp_includes.lib.error_handler import handle_error
 from bp_includes import config as config_boilerplate
-
+print(os.environ)
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'bp_content/themes/', os.environ['theme']))
 # Import Config Importing
 import config as config_theme

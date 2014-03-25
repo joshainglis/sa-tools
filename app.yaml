@@ -1,11 +1,11 @@
-application: sandengine
+application: sa-tools
 version: dev
 runtime: python27
 api_version: 1
 threadsafe: true
 
 env_variables:
-  theme: 'default'
+  theme: 'sa_default'
 
 default_expiration: "30d"
 
@@ -113,7 +113,8 @@ handlers:
 
 - url: /.*
   script: main.app
-#  secure: always
+  login: required
+  secure: always
 
 libraries:
 - name: jinja2
@@ -124,6 +125,8 @@ libraries:
   version: "0.15"
 - name: pycrypto
   version: "2.6"
+- name: PIL
+  version: "1.1.7"
 
 error_handlers:
   # Only errors with error_code, don't put a default error here
