@@ -96,6 +96,8 @@ class AidForm(BaseForm):
     updated_by = fields.HiddenField()
     name = fields.TextField(_('Name'), NAME_FIELD_VALIDATORS)
     cost = fields.FloatField(_('Cost'), [validators.Required()] + PRICE_FIELD_VALIDATORS)
+    maintenance = fields.FloatField(_('Yearly Maintenance'), PRICE_FIELD_VALIDATORS)
+    replacement = fields.FloatField(_('Replacement'), PRICE_FIELD_VALIDATORS)
     installation = fields.FloatField(_('Installation'), PRICE_FIELD_VALIDATORS)
     postage = fields.FloatField(_('Postage'), PRICE_FIELD_VALIDATORS)
     notes = fields.TextAreaField(_('Message'), NOTES_FIELD_VALIDATORS)

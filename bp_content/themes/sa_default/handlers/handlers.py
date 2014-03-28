@@ -15,6 +15,7 @@ from google.appengine.ext.ndb.key import Key
 import webapp2
 from google.appengine.ext import ndb
 from google.appengine.api import taskqueue
+from webapp2_extras import json
 from webapp2_extras.auth import InvalidAuthIdError, InvalidPasswordError
 from webapp2_extras.i18n import gettext as _
 from bp_content.themes.sa_default.handlers import models
@@ -301,6 +302,8 @@ class AddAidHandler(BaseHandler):
             return self.get()
         name = self.form.name.data.strip()
         cost = self.form.cost.data
+        maintenance = self.form.maintenance.data
+        replacement = self.form.replacement.data
         installation = self.form.installation.data
         postage = self.form.postage.data
         supplier = self.form.supplier.data
@@ -310,6 +313,8 @@ class AddAidHandler(BaseHandler):
         new_aid = Aid()
         new_aid.name = name
         new_aid.cost = cost
+        new_aid.maintenance = maintenance
+        new_aid.replacement = replacement
         new_aid.installation = installation
         new_aid.postage = postage
         new_aid.supplier = Key("Supplier", supplier)
@@ -333,6 +338,28 @@ class ViewSuppliers(BaseHandler):
 
 class ViewAids(BaseHandler):
     show_fields = ['name']
+
     def get(self):
         data = Aid.query().order(Aid.name)
         return self.render_template('view_aids.html', table_data=data)
+
+
+class AjaxGetFullProductHandler(webapp2.RequestHandler):
+    def post(self):
+        record_id = json.decode(self.request.body).get('record_id')
+        record = Aid.get_by_id(int(record_id))
+        try:
+            record_dict = dict(
+                name=record.name,
+                cost=record.cost,
+                supplier=record.supplier.get().name,
+                maintenance=record.maintenance,
+                replacement=record.replacement,
+                error=False,
+            )
+        except AttributeError:
+            record_dict = {'error': True}
+        record_dict['id'] = record_id
+        res = json.encode(record_dict)
+        print(res)
+        self.response.out.write(res)

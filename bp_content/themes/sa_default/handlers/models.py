@@ -56,6 +56,8 @@ class Aid(ndb.Model):
     updated_by = ndb.UserProperty(auto_current_user=True)
     name = ndb.StringProperty(required=True)
     cost = PriceProperty(required=True)
+    maintenance = PriceProperty(required=False, default=0.0, verbose_name="Yearly Maintenance")
+    replacement = ndb.FloatProperty(required=False, default=0.0, verbose_name="Years per replacement")
     installation = PriceProperty(required=False, default=0.0)
     postage = PriceProperty(required=False, default=0.0)
     notes = ndb.TextProperty(required=False)

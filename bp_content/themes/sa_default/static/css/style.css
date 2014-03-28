@@ -18,3 +18,9 @@ th {
 .home_bp p {
   font-size: 1.2em;
 }
+.copy-table {
+  float: right;
+}
+.aid_table_select {
+  float: left;
+}
