@@ -1,5 +1,5 @@
 /*jslint browser: true*/
-/*global $, jQuery, alert*/
+/*global $, jQuery, alert, console*/
 
 /** Put here your Scripts **/
 
@@ -109,12 +109,76 @@ var actuary = {
 
 $(document).ready(function () {
     'use strict';
-    var disp, ctable, age, sex;
+    var disp, ctable, age, sex, yr_total, lf_total, yr_cell, t_cell;
 
     disp = {};
     ctable = $('#ctable');
+    yr_cell = $('#cost_per_year_price');
+    t_cell = $('#grand_total_price');
     age = null;
     sex = null;
+    yr_total = 0;
+    lf_total = 0;
+
+    function format_currency(x) {
+        var tmp;
+        if (!isNaN(x)) {
+            tmp = "$" + Number(Math.round(x)).toLocaleString();
+        } else {
+            tmp = x.toString();
+        }
+        return tmp;
+    }
+
+    function update_lf_display() {
+        t_cell.text(format_currency(lf_total));
+    }
+
+    function add_lf_total(amount) {
+        if (!isNaN(amount)) {
+            lf_total = lf_total + amount;
+            update_lf_display();
+        }
+    }
+
+    function sub_lf_total(amount) {
+        add_lf_total(-amount);
+    }
+
+    function reset_lf_total() {
+        lf_total = 0;
+        update_lf_display();
+    }
+
+    function set_lf_total(new_total) {
+        reset_lf_total();
+        add_lf_total(new_total);
+    }
+
+    function update_yr_display() {
+        yr_cell.text(format_currency(yr_total));
+    }
+
+    function reset_yr_total() {
+        yr_total = 0;
+        update_yr_display();
+    }
+
+    function add_yr_total(amount) {
+        if (!isNaN(amount)) {
+            yr_total = yr_total + amount;
+            update_yr_display();
+        }
+    }
+
+    function sub_yr_total(amount) {
+        add_yr_total(-amount);
+    }
+
+    function set_yr_total(new_total) {
+        reset_yr_total();
+        add_yr_total(new_total);
+    }
 
     function calculate_yearly(inital, maintenance, replacement_freq) {
         if (replacement_freq === 0.0) {
@@ -130,28 +194,40 @@ $(document).ready(function () {
         return actuary[Math.round(age).toString()][sex] * yearly + initial;
     }
 
-    function recalculate_lifetime() {
+    function calculate_totals() {
+        var key, tmp_year_total, tmp_yearly, tmp_lifetime_total, tmp_lifetime_cost;
+        tmp_year_total = 0;
+        tmp_lifetime_total = 0;
+        if ((age === 0 || age > 0) && (sex === 'male' || sex === 'female')) {
+            for (key in disp) {
+                if (disp.hasOwnProperty(key) && (key !== 'totals')) {
+                    tmp_year_total = tmp_year_total + disp[key].yearly;
+                    tmp_lifetime_total = tmp_lifetime_total + disp[key].lifetime;
+                }
+            }
+            set_yr_total(tmp_year_total);
+            set_lf_total(tmp_lifetime_total);
+        }
+        event.preventDefault();
+    }
+
+    function recalculate_rows_lifetime() {
         var lt, key, td;
         for (key in disp) {
             if (disp.hasOwnProperty(key)) {
                 td = $('#ctable').find('#' + key + ' .table_cost_life');
-                td.css("background-color", "#FF3700");
-                lt = calculate_lifetime(disp[key].cost,
-                    calculate_yearly(
-                        disp[key].cost,
-                        disp[key].maintenance,
-                        disp[key].replacement
-                    ));
-                td.text(Math.round(lt));
-                td.css("background-color", "#FFFFFF");
+                lt = calculate_lifetime(disp[key].cost, disp[key].yearly);
+                disp[key].lifetime = lt;
+                td.text(format_currency(lt));
             }
         }
     }
 
     $('input[name="sex"]').change(function () {
         sex = this.value;
-        recalculate_lifetime();
-        return false;
+        recalculate_rows_lifetime();
+        calculate_totals();
+        event.preventDefault();
     });
 
     $('input[name="age"]').change(function () {
@@ -160,23 +236,23 @@ $(document).ready(function () {
         if (isNaN(tmp)) {
             alert("Please enter a number for age");
             age = null;
-            return false;
-        }
-        if (tmp < 0) {
+        } else if (tmp < 0) {
             alert("Please enter a positive number for age");
             age = null;
-            return false;
+        } else {
+            if (tmp > 100) {
+                tmp = 100;
+            }
+            age = tmp;
+            recalculate_rows_lifetime();
+            calculate_totals();
         }
-        if (tmp > 100) {
-            tmp = 100;
-        }
-        age = tmp;
-        recalculate_lifetime();
-        return false;
+        event.preventDefault();
     });
 
     function add_row(response) {
-        var yearly, rows, lifetime;
+        var yearly, rows, lifetime, valid;
+        valid = false;
         if (!response.error) {
             disp[response.id] = response;
             yearly = calculate_yearly(
@@ -185,13 +261,15 @@ $(document).ready(function () {
                 response.replacement
             );
             lifetime = calculate_lifetime(response.cost, yearly);
+            disp[response.id].yearly = yearly;
+            disp[response.id].lifetime = lifetime;
             rows = $(
                 '<tr id="' + response.id + '">' +
                     '<td class="table_name">' + response.name + '</td>' +
                     '<td class="table_supplier">' + response.supplier + '</td>' +
-                    '<td class="table_cost_init">$' + response.cost + '</td>' +
-                    '<td class="table_cost_yrly">$' + Math.round(yearly) + '</td>' +
-                    '<td class="table_cost_life">$' + Math.round(lifetime) + '</td>' +
+                    '<td class="table_cost_init">' + format_currency(response.cost) + '</td>' +
+                    '<td class="table_cost_yrly">' + format_currency(yearly) + '</td>' +
+                    '<td class="table_cost_life">' + format_currency(lifetime) + '</td>' +
                     '</tr>'
             );
             rows.hide();
@@ -200,6 +278,8 @@ $(document).ready(function () {
             rows.fadeIn(400, function () {
                 rows.css("background-color", "#FFFFFF");
             });
+            add_lf_total(lifetime);
+            add_yr_total(yearly);
         } else {
             //noinspection JSLint
             console.log('There was an error retrieving the given record' + response);
@@ -208,6 +288,10 @@ $(document).ready(function () {
 
     function delete_row(id) {
         var tr;
+        console.log(id);
+        console.log(disp);
+        sub_lf_total(disp[id].lifetime);
+        sub_yr_total(disp[id].yearly);
         delete disp[id];
         tr = $("#ctable #" + id).closest('tr');
         tr.css("background-color", "#FF3700");
@@ -218,33 +302,41 @@ $(document).ready(function () {
 
     function checkbox_changed(element) {
         var cur_id;
-        if (element.checked) {
-            if (!disp.hasOwnProperty(element.id)) {
-                cur_id = element.id;
-                $.ajax({
-                    type: "POST",
-                    url: "/get_full_product_info/",
-                    contentType: "application/json; charset=utf-8",
-                    data: JSON.stringify({'record_id': cur_id}),
-                    dataType: 'json',
-                    success: add_row
-                });
+        if (element.id !== 'check-all') {
+            if (element.checked) {
+                if (!disp.hasOwnProperty(element.id)) {
+                    cur_id = element.id;
+                    $.ajax({
+                        type: "POST",
+                        url: "/get_full_product_info/",
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({'record_id': cur_id}),
+                        dataType: 'json',
+                        success: add_row
+                    });
+                }
+            } else {
+                delete_row(element.id);
             }
-        } else {
-            delete_row(element.id);
         }
-        return false;
+        event.preventDefault();
     }
 
-    $("input[class='checkbox']").change(function () {
+    $("input[name='cb1']").change(function () {
         checkbox_changed(this);
     });
 
     $('#check-all').change(function () {
-        var allOn = this.checked;
-        $('input[type="checkbox"]').each(function () {
-            this.checked = allOn;
-            checkbox_changed(this);
+        var ca;
+        ca = this;
+        $('input[type="checkbox"]').each(function (i, el) {
+            console.log('el: ' + el.id + " ca: " + ca.id);
+            if (el.id !== 'check-all') {
+                if (el.checked !== ca.checked) {
+                    el.checked = ca.checked;
+                    checkbox_changed(el);
+                }
+            }
         });
     });
 

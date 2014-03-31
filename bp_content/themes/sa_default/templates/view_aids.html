@@ -39,7 +39,7 @@
                 <tbody>
                 {% for row in table_data %}
                     <tr>
-                        <td><input type="checkbox" class="checkbox" name="" id="{{ row.key.id() }}"/></td>
+                        <td><input type="checkbox" class="checkbox" name="cb1" id="{{ row.key.id() }}"/></td>
                         <td>{{ row.name }}</td>
                         <td>{{ "$%.2f"|format(row.cost) }}</td>
                         <td>{{ row.supplier.get().name }}</td>
@@ -67,11 +67,11 @@
                 <tfoot>
                 <tr>
                     <td colspan="3" class="cost_per_year_title">Cost per year</td>
-                    <td colspan="2" class="cost_per_year_price"></td>
+                    <td colspan="2" class="cost_per_year_price" id="cost_per_year_price"></td>
                 </tr>
                 <tr>
                     <td colspan="3" class="grand_total_title">Lifetime Cost</td>
-                    <td colspan="2" class="grand_total_price"></td>
+                    <td colspan="2" class="grand_total_price" id="grand_total_price"></td>
                 </tr>
                 </tfoot>
                 <tbody>

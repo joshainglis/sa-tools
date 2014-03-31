@@ -250,14 +250,11 @@ class DeleteAccountHandler(BaseHandler):
 class AddSupplierHandler(BaseHandler):
     @user_required
     def get(self):
-        if self.user:
-            user_info = self.user_model.get_by_id(long(self.user_id))
-            if user_info.name or user_info.last_name:
-                self.form.created_by.data = user_info.email
-                self.form.updated_by.data = user_info.email
-                self.form.name.data = user_info.name + " " + user_info.last_name
-            if user_info.email:
-                self.form.email.data = user_info.email
+        self.form.name.data = ''                 
+        self.form.email.data = ''               
+        self.form.phone.data = ''               
+        self.form.website.data = ''   
+        self.form.notes.data = ''                       
 
         return self.render_template('add_supplier.html')
 
@@ -291,7 +288,17 @@ class AddSupplierHandler(BaseHandler):
 
 class AddAidHandler(BaseHandler):
     @user_required
-    def get(self):
+    def get(self, clear=True):
+        if clear:
+            self.form.name.data = ''
+            self.form.cost.data = ''
+            self.form.maintenance.data = ''
+            self.form.replacement.data = ''
+            self.form.installation.data = ''
+            self.form.postage.data = ''
+            self.form.supplier.data = ''
+            self.form.tags.data = ''
+            self.form.notes.data = ''
         return self.render_template('add_aid.html')
 
     @user_required
@@ -299,7 +306,7 @@ class AddAidHandler(BaseHandler):
         """ validate contact form """
 
         if not self.form.validate():
-            return self.get()
+            return self.get(clear=False)
         name = self.form.name.data.strip()
         cost = self.form.cost.data
         maintenance = self.form.maintenance.data
