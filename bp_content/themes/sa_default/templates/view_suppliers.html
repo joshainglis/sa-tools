@@ -1,0 +1,41 @@
+{% extends base_layout %}
+
+{% block title %}
+    {% trans %}Add Aid{% endtrans %} - {{ app_name }}
+{% endblock %}
+{% block header_title %}
+    {% trans %}Add Aid{% endtrans %}
+{% endblock %}
+{% block mediaCSS %}
+    <link rel="stylesheet" href="/{{ theme }}/css/jquery.dataTables.css">
+{% endblock %}
+
+{% block content %}
+    {% set show_fields = ['name', 'website', 'email', 'phone'] %}
+    <div class="supplier_view">
+        <div class="supplier_table_select">
+            <table id="supplier_table">
+                <thead>
+                <tr>
+                    {% for fld in show_fields %}<th>{{ fld }}</th>{% endfor %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in table_data %}
+                    <tr>
+                        <td>{{ row.name }}</td>
+                        <td>{{ row.website }}</td>
+                        <td>{{ row.email }}</td>
+                        <td>{{ row.phone }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+{% block mediaJS %}
+    <script src="/{{ theme }}/js/jquery.js"></script>
+    <script src="/{{ theme }}/js/jquery.dataTables.min.js"></script>
+    <script src="/{{ theme }}/js/view_suppliers_utilities.js"></script>
+{% endblock %}

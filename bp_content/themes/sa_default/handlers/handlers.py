@@ -249,12 +249,13 @@ class DeleteAccountHandler(BaseHandler):
 
 class AddSupplierHandler(BaseHandler):
     @user_required
-    def get(self):
-        self.form.name.data = ''                 
-        self.form.email.data = ''               
-        self.form.phone.data = ''               
-        self.form.website.data = ''   
-        self.form.notes.data = ''                       
+    def get(self, clear=True):
+        if clear:
+            self.form.name.data = ''
+            self.form.email.data = ''
+            self.form.phone.data = ''
+            self.form.website.data = ''
+            self.form.notes.data = ''
 
         return self.render_template('add_supplier.html')
 
@@ -263,7 +264,7 @@ class AddSupplierHandler(BaseHandler):
         """ validate contact form """
 
         if not self.form.validate():
-            return self.get()
+            return self.get(clear=False)
         name = self.form.name.data.strip()
         email = self.form.email.data.lower()
         phone = self.form.phone.data.strip()
@@ -339,8 +340,8 @@ class AddAidHandler(BaseHandler):
 
 class ViewSuppliers(BaseHandler):
     def get(self):
-        suppliers = Supplier.query().fetch(20)
-        pass
+        data = Supplier.query().order(Supplier.name)
+        return self.render_template('view_suppliers.html', table_data=data)
 
 
 class ViewAids(BaseHandler):
@@ -370,3 +371,26 @@ class AjaxGetFullProductHandler(webapp2.RequestHandler):
         res = json.encode(record_dict)
         print(res)
         self.response.out.write(res)
+
+
+class EnterCare(BaseHandler):
+    @webapp2.cached_property
+    def form(self):
+        return forms.CareForm(self)
+
+    def get(self):
+        pass
+
+    def post(self):
+        if not self.form.validate():
+            return self.get()
+        customer_choice = self.form.client_select.data
+        client_data = self.form.client.data
+        care_data = self.form.care.data
+        for care_type_wrapper in care_data:
+            care_types = [x.care_type.data if x.care_type.data is not 'other' else x.care_type_other.data for x in
+                          care_type_wrapper.care_type.data]
+            care_suppliers = care_type_wrapper.care_supplier.data
+            #TODO Continue from here
+
+

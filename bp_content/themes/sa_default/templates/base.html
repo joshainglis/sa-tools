@@ -169,6 +169,9 @@
                                 <li{% if path == uri_for("view-aids") %} class="active"{% endif %}>
                                     <a href="{{ uri_for('view-aids') }}">{% trans %}View Aids{% endtrans %}</a>
                                 </li>
+                                <li{% if path == uri_for("view-suppliers") %} class="active"{% endif %}>
+                                    <a href="{{ uri_for('view-suppliers') }}">{% trans %}View Supplier{% endtrans %}</a>
+                                </li>
                                 <li{% if path == uri_for("add-supplier") %} class="active"{% endif %}>
                                     <a href="{{ uri_for('add-supplier') }}">{% trans %}Add Supplier{% endtrans %}</a>
                                 </li>

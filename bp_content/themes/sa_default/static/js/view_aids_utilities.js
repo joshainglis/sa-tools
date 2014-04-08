@@ -1,8 +1,6 @@
 /*jslint browser: true*/
 /*global $, jQuery, alert, console*/
 
-/** Put here your Scripts **/
-
 var actuary = {
     "0": {"male": 79.9, 'female': 84.3},
     "1": {'male': 79.3, 'female': 83.5},

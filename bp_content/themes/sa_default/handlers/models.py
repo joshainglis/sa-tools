@@ -37,23 +37,50 @@ class HierarchicalTag(ndb.Model):
     parent = ndb.KeyProperty(required=True, kind='HierarchicalTag')
 
 
-class Supplier(ndb.Model):
+class BaseModel(ndb.Model):
     created = ndb.DateTimeProperty(auto_now_add=True)
     created_by = ndb.UserProperty(auto_current_user_add=True)
     updated = ndb.DateTimeProperty(auto_now=True)
     updated_by = ndb.UserProperty(auto_current_user=True)
+
+
+class Accident(ndb.Model):
+    date = ndb.DateProperty()
+    location = ndb.StringProperty()
+    notes = ndb.TextProperty()
+
+
+class Injury(ndb.Model):
+    date = ndb.DateProperty()
+    notes = ndb.TextProperty()
+
+
+class Address(ndb.Model):
+    unit = ndb.StringProperty()
+    address1 = ndb.StringProperty()
+    address2 = ndb.StringProperty()
+    suburb = ndb.StringProperty()
+    state = ndb.StringProperty(choices=['QLD', 'NSW', 'VIC', 'WA', 'SA', 'NT', 'ACT'])
+
+
+class Client(BaseModel):
+    name_first = ndb.StringProperty(required=True)
+    name_last = ndb.StringProperty(required=True)
+    dob = ndb.DateProperty(required=True)
+    sex = ndb.StringProperty(required=True, choices=["Male", "Female"])
+    address = ndb.StructuredProperty(Address)
+    contact = ndb.StringProperty(repeated=True)
+
+
+class Supplier(BaseModel):
     name = ndb.StringProperty(required=True)
-    email = EmailProperty(required=False)
+    email = ndb.TextProperty(required=False)
     phone = PhoneProperty(required=False)
     website = ndb.TextProperty(required=False)
     notes = ndb.TextProperty(required=False)
 
 
-class Aid(ndb.Model):
-    created = ndb.DateTimeProperty(auto_now_add=True)
-    created_by = ndb.UserProperty(auto_current_user_add=True)
-    updated = ndb.DateTimeProperty(auto_now=True)
-    updated_by = ndb.UserProperty(auto_current_user=True)
+class Aid(BaseModel):
     name = ndb.StringProperty(required=True)
     cost = PriceProperty(required=True)
     maintenance = PriceProperty(required=False, default=0.0, verbose_name="Yearly Maintenance")
@@ -65,4 +92,37 @@ class Aid(ndb.Model):
     tags = ndb.StringProperty(repeated=True)
 
 
+class SimplePriceModel(BaseModel):
+    log_model = ndb.BooleanProperty(required=True, default=False)
+    intercept = ndb.FloatProperty()
+    slope = ndb.FloatProperty()
 
+
+class PriceModelMixin(object):
+    price_model = ndb.KeyProperty(kind=SimplePriceModel)
+
+
+class CareSupplier(Supplier, PriceModelMixin):
+    pass
+
+
+class GratuitousCare(BaseModel, PriceModelMixin):
+    state = ndb.StringProperty(choices=['QLD', 'NSW', 'VIC', 'WA', 'SA', 'NT', 'ACT'],
+                               required=True)
+
+
+class CareInstance(BaseModel):
+    supplier = ndb.KeyProperty(kind=CareSupplier)
+    period = ndb.StringProperty()
+    start = ndb.DateProperty(required=True)
+    end = ndb.DateProperty(required=True)
+    hours = ndb.FloatProperty()
+    minutes = ndb.FloatProperty()
+    per = ndb.StringProperty(choices=['D', 'W', 'M', 'A', 'TOTAL'])
+    notes = ndb.TextProperty()
+
+
+class Care(BaseModel):
+    category = ndb.StringProperty()
+    care = ndb.StructuredProperty(modelclass=CareInstance, repeated=True, required=True)
+    pass
