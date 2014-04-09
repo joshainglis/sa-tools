@@ -1,5 +1,7 @@
 import os
 
+os.environ['PYTHON_EGG_CACHE'] = os.path.join('C:\\', 'Users', 'josha_000', 'PycharmProjects', 'sa-tools', 'tmp')
+
 config = {
 
     # This config file will be detected in localhost environment and values defined here will overwrite those in
@@ -69,7 +71,7 @@ config = {
     # If true, it will write in datastore a log of every visit
     'log_visit': True,
 
-# ----> ADD MORE CONFIGURATION OPTIONS HERE <----
+    # ----> ADD MORE CONFIGURATION OPTIONS HERE <----
     'captcha_public_key': "6LeJM_ASAAAAAGgm-2T7fKIsb7uToMbX-6kfyXex",
     'captcha_private_key': "6LeJM_ASAAAAAP0wT-3jKO028AoZbVwKJXoF5UjH",
 

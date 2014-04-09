@@ -1,10 +1,10 @@
 {% extends base_layout %}
 
 {% block title %}
-        {% trans %}Add Care{% endtrans %} - {{app_name}}
+    {% trans %}Add Care{% endtrans %} - {{ app_name }}
 {% endblock %}
 {% block header_title %}
-        {% trans %}Add Care{% endtrans %}
+    {% trans %}Add Care{% endtrans %}
 {% endblock %}
 
 {% block content %}
@@ -12,11 +12,47 @@
         <fieldset>
             <input type="hidden" name="exception" value="{{ exception|e }}">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            {{ macros.field(form.name, label=_("Name"), placeholder=_("Enter Supplier")+" "+_("Name"), class="input-xlarge focused required") }}
-            {{ macros.field(form.email, label=_("Email"), placeholder=_("Enter Supplier")+" "+_("Email"), class="input-xlarge focused email", type="email") }}
-            {{ macros.field(form.phone, label=_("Phone"), placeholder=_("Enter Supplier")+" "+_("Phone"), class="input-xlarge") }}
-            {{ macros.field(form.website, label=_("Website"), placeholder=_("Enter Supplier")+" "+_("Website"), class="input-xlarge") }}
-            {{ macros.field(form.notes, label=_("Notes"), class="input-xlarge", cols="40", rows="8") }}
+            {{ macros.field(form.client_select, label=_("Select Client"), default='new', class="input-xlarge focused") }}
+            <fieldset>
+                {{ macros.field(form.client.name_first, label=_("First Name"), placeholder=_("First")+" "+_("Name"), class="input-xlarge required") }}
+                {{ macros.field(form.client.name_last, label=_("Last Name"), placeholder=_("First")+" "+_("Name"), class="input-xlarge required") }}
+                {{ macros.field(form.client.dob, label=_("Date of Birth"), class="input-xlarge required") }}
+                {{ macros.field(form.client.sex, label=_("Sex"), class="input-xlarge required") }}
+                {{ macros.field(form.client.name_first, label=_("Name"), placeholder=_("First")+" "+_("Name"), class="input-xlarge required") }}
+                {{ macros.field(form.client.address.unit, label=_("Unit"), class="input-xlarge") }}
+                {{ macros.field(form.client.address.address1, label=_("Address 1"), class="input-xlarge required") }}
+                {{ macros.field(form.client.address.address2, label=_("Address 2"), class="input-xlarge") }}
+                {{ macros.field(form.client.address.suburb, label=_("Suburb"), class="input-xlarge required") }}
+                {{ macros.field(form.client.address.state, label=_("State"), class="input-xlarge required") }}
+            </fieldset>
+            <fieldset>
+                {% for care_section in form.care %}
+                    <fieldset>
+                        {% for care_type in care_section.care_type %}
+                            {{ macros.field(care_type.care_type, label=_("Care Type"), class="input-xlarge") }}
+                            {{ macros.field(care_type.care_type_other, label=_("Care Type"), class="input-xlarge") }}
+                        {% endfor %}
+                    </fieldset>
+                    <fieldset>
+                        {% for care_supplier in care_section.care_supplier %}
+                            <fieldset>
+                                {{ macros.field(care_supplier.supplier, label=_("Supplier"), class="input-xlarge") }}
+                                <fieldset>
+                                    {% for care_instance in care_supplier.care_instances %}
+                                        <fieldset>
+                                            {{ macros.field(care_instance.date_start, label=_("Start Date"), class="input-xlarge required") }}
+                                            {{ macros.field(care_instance.date_end, label=_("End Date"), class="input-xlarge required") }}
+                                            {{ macros.field(care_instance.hours, label=_("Hours"), class="input-xlarge") }}
+                                            {{ macros.field(care_instance.minutes, label=_("Minutes"), class="input-xlarge") }}
+                                            {{ macros.field(care_instance.frequency, label=_("Frequency"), class="input-xlarge") }}
+                                        </fieldset>
+                                    {% endfor %}
+                                </fieldset>
+                            </fieldset>
+                        {% endfor %}
+                    </fieldset>
+                {% endfor %}
+            </fieldset>
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">{% trans %}Submit{% endtrans %}</button>
             </div>
@@ -25,15 +61,15 @@
 {% endblock %}
 
 {% block mediaJS %}
-<script>
-    $().ready(function() {
-        $("#form_add_supplier").validate({
-            errorPlacement: function(error, element) {
-                element.parent().parent().addClass("error");
-                error.addClass("help-inline").appendTo( element.parent() );
-            }
+    <script>
+        $().ready(function () {
+            $("#form_add_care").validate({
+                errorPlacement: function (error, element) {
+                    element.parent().parent().addClass("error");
+                    error.addClass("help-inline").appendTo(element.parent());
+                }
+            });
         });
-    });
-</script>
+    </script>
 {% endblock %}
 

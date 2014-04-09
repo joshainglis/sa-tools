@@ -374,23 +374,64 @@ class AjaxGetFullProductHandler(webapp2.RequestHandler):
 
 
 class EnterCare(BaseHandler):
+    @user_required
+    def get(self):
+        return self.render_template('add_care.html')
+
     @webapp2.cached_property
     def form(self):
         return forms.CareForm(self)
 
-    def get(self):
-        pass
-
-    def post(self):
-        if not self.form.validate():
-            return self.get()
-        customer_choice = self.form.client_select.data
-        client_data = self.form.client.data
-        care_data = self.form.care.data
-        for care_type_wrapper in care_data:
-            care_types = [x.care_type.data if x.care_type.data is not 'other' else x.care_type_other.data for x in
-                          care_type_wrapper.care_type.data]
-            care_suppliers = care_type_wrapper.care_supplier.data
-            #TODO Continue from here
+    # @user_required
+    # def post(self):
+    #     if not self.form.validate():
+    #         return self.get()
+    #     customer_choice = self.form.client_select.data
+    #     client_data = self.form.client.data
+    #     if customer_choice is not 'new':
+    #         client = models.Client.get_by_id(int(customer_choice))
+    #         altered = not all([
+    #             client.name_first == client_data.name_first.data,
+    #             client.name_last == client_data.name_last.data,
+    #             client.dob == client_data.dob.data,
+    #             client.sex == client_data.sex.data,
+    #             client.address == client_data.address.data,
+    #             client.contact == client_data.contact.data,
+    #         ])
+    #     else:
+    #         client = models.Client()
+    #         altered = True
+    #     if altered:
+    #         client.name_first = client_data.name_first.data
+    #         client.name_last = client_data.name_last.data
+    #         client.dob = client_data.dob.data
+    #         client.sex = client_data.sex.data
+    #         address = client_data.address.data
+    #         client.address = models.Address(
+    #             unit=address.unit.data,
+    #             address1=address.address1.data,
+    #             address2=address.address2.data,
+    #             suburb=address.suburb.data,
+    #             state=address.state.data
+    #         )
+    #         client.contact = client_data.contact.data
+    #         client_key = client.put()
+    #     else:
+    #         client_key = client.key
+    #
+    #     care_data = self.form.care.data
+    #     for care_type_wrapper in care_data:
+    #         care_types = [x.care_type.data if x.care_type.data is not 'other' else x.care_type_other.data for x in
+    #                       care_type_wrapper.care_type.data]
+    #         care_suppliers = care_type_wrapper.care_supplier.data
+    #         for care_supplier in care_suppliers:
+    #             supplier = care_supplier.supplier.data
+    #             care_instances = care_supplier.care_instances.data
+    #             for care_instance in care_instances:
+    #                 date_start = care_instance.date_start.data
+    #                 date_end = care_instance.date_end.data
+    #                 hours = care_instance.hours.data
+    #                 minutes = care_instance.minutes.data
+    #                 frequency = care_instance.frequency.data
 
 

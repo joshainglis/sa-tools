@@ -324,8 +324,10 @@ class BaseHandler(webapp2.RequestHandler):
             'base_layout': self.get_base_layout
         })
         kwargs.update(self.auth_config)
-        if hasattr(self, 'form'):
+        try:
             kwargs['form'] = self.form
+        except AttributeError:
+            logging.log(2, 'Form not found')
         if self.messages:
             kwargs['messages'] = self.messages
 

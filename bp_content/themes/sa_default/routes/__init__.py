@@ -16,6 +16,7 @@ _routes = [
     RedirectRoute('/contact/', handlers.ContactHandler, name='contact', strict_slash=True),
     RedirectRoute('/add_supplier/', handlers.AddSupplierHandler, name='add-supplier', strict_slash=True),
     RedirectRoute('/add_aid/', handlers.AddAidHandler, name='add-aid', strict_slash=True),
+    RedirectRoute('/add_care/', handlers.EnterCare, name='add-care', strict_slash=True),
     RedirectRoute('/view_aids/', handlers.ViewAids, name='view-aids', strict_slash=True),
     RedirectRoute('/view_suppliers/', handlers.ViewSuppliers, name='view-suppliers', strict_slash=True),
     RedirectRoute('/get_full_product_info/', handlers.AjaxGetFullProductHandler, name='ajax-aids', strict_slash=True),

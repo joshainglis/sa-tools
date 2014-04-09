@@ -1,5 +1,5 @@
 from bp_content.themes.sa_default.handlers import models
-from bp_content.themes.sa_default.handlers.custom_fields import BetterTagListField, SupplierChoice
+from bp_content.themes.sa_default.handlers.custom_fields import BetterTagListField, SupplierChoice, ClientChoice
 
 __author__ = 'coto'
 """
@@ -67,8 +67,12 @@ class FormTranslations(object):
 
 
 class BaseForm(Form):
-    def __init__(self, request_handler):
-        super(BaseForm, self).__init__(request_handler.request.POST)
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        try:
+            formdata = formdata.request.POST
+        except AttributeError:
+            pass
+        super(BaseForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
 
     def _get_translations(self):
         return FormTranslations()
@@ -138,7 +142,8 @@ class ClientForm(BaseForm):
     name_first = fields.TextField(label=_('First Name'))
     name_last = fields.TextField(label=_('Last Name'))
     dob = fields.DateField(label=_("Date of Birth"))
-    sex = fields.SelectField(label=_('Sex'), choices=[_("Male"), _('Female')])
+    sex = fields.SelectField(label=_('Sex'), choices=[('male', _("Male")),
+                                                      ('female', _('Female'))])
     address = fields.FormField(AddressForm)
 
 
@@ -146,7 +151,7 @@ class CareInstanceForm(BaseForm):
     date_start = fields.DateField(label=_('Start'))
     date_end = fields.DateField(label=_('End'))
     hours = fields.FloatField(label=_('Hours'))
-    minutes = fields.FloatField(label=_('Hours'))
+    minutes = fields.FloatField(label=_('Minutes'))
     frequency = fields.SelectField(label=_('Per'), choices=[('D', 'Day'),
                                                             ('W', 'Week'),
                                                             ('F', 'Fortnight'),
@@ -171,7 +176,7 @@ class CareTypeWrapperForm(BaseForm):
     care_supplier = fields.FieldList(fields.FormField(CareSupplierForm))
 
 
-class CareForm(BaseForm, CreationDetailsMixin):
-    client_select = fields.SelectField(label=_('Client'))
+class CareForm(BaseForm):
+    client_select = ClientChoice(label=_('Client'))
     client = fields.FormField(ClientForm, label=_('Client Details'))
     care = fields.FieldList(fields.FormField(CareTypeWrapperForm))

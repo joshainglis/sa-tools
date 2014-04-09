@@ -112,6 +112,8 @@ class GratuitousCare(BaseModel, PriceModelMixin):
 
 
 class CareInstance(BaseModel):
+    customer = ndb.KeyProperty(kind=Client)
+    category = ndb.StringProperty(repeated=True)
     supplier = ndb.KeyProperty(kind=CareSupplier)
     period = ndb.StringProperty()
     start = ndb.DateProperty(required=True)
@@ -122,7 +124,11 @@ class CareInstance(BaseModel):
     notes = ndb.TextProperty()
 
 
-class Care(BaseModel):
-    category = ndb.StringProperty()
-    care = ndb.StructuredProperty(modelclass=CareInstance, repeated=True, required=True)
-    pass
+# class CareSupplierInstance(BaseModel):
+#     supplier = ndb.KeyProperty(kind=CareSupplier)
+#     care_instances = ndb.StructuredProperty(modelclass=CareInstance, repeated=True, required=True)
+
+# class Care(BaseModel):
+#     category = ndb.StringProperty()
+#     care = ndb.StructuredProperty(modelclass=CareSupplierInstance, repeated=True, required=True)
+#     pass
