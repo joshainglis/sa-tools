@@ -1,5 +1,6 @@
 from bp_content.themes.sa_default.handlers import models
-from bp_content.themes.sa_default.handlers.custom_fields import BetterTagListField, SupplierChoice, ClientChoice
+from bp_content.themes.sa_default.handlers.custom_fields import BetterTagListField, SupplierChoice, ClientChoice, \
+    CareSupplierChoice
 
 __author__ = 'coto'
 """
@@ -102,7 +103,7 @@ class ContactForm(EmailMixin):
     pass
 
 
-class SupplierForm(BaseForm, CreationDetailsMixin):
+class SupplierForm(BaseForm):
     name = fields.TextField(_('Name'), NAME_FIELD_VALIDATORS)
     email = fields.TextField(_('Email'), EMAIL_FIELD_VALIDATORS)
     phone = fields.TextField(_('Phone'), PHONE_FIELD_VALIDATORS)
@@ -126,8 +127,8 @@ class AidForm(BaseForm, CreationDetailsMixin):
 
 class AddressForm(BaseForm):
     unit = fields.TextField(label=_('Unit'))
-    address_1 = fields.TextField(label=_('Unit'))
-    address_2 = fields.TextField(label=_('Unit'))
+    address1 = fields.TextField(label=_('Unit'))
+    address2 = fields.TextField(label=_('Unit'))
     suburb = fields.TextField(label=_('Unit'))
     state = fields.SelectField(label=_('State'), choices=[('QLD', 'QLD'), 
                                                           ('NSW', 'NSW'), 
@@ -136,6 +137,9 @@ class AddressForm(BaseForm):
                                                           ('SA', 'SA'), 
                                                           ('NT', 'NT'), 
                                                           ('ACT', 'ACT')], default='QLD')
+
+class CareSupplierInputForm(SupplierForm):
+    pass
 
 
 class ClientForm(BaseForm):
@@ -167,16 +171,17 @@ class CareTypeForm(BaseForm):
 
 
 class CareSupplierForm(BaseForm):
-    supplier = fields.SelectField(label=_('Supplier'))
-    care_instances = fields.FieldList(fields.FormField(CareInstanceForm))
+    supplier = CareSupplierChoice(label=_('Supplier'))
+    supplier_info = fields.FormField(CareSupplierInputForm)
+    care_instances = fields.FieldList(fields.FormField(CareInstanceForm), min_entries=3)
 
 
 class CareTypeWrapperForm(BaseForm):
-    care_type = fields.FieldList(fields.FormField(CareTypeForm))
-    care_supplier = fields.FieldList(fields.FormField(CareSupplierForm))
+    care_type = fields.FormField(CareTypeForm)
+    care_supplier = fields.FieldList(fields.FormField(CareSupplierForm), min_entries=2)
 
 
 class CareForm(BaseForm):
     client_select = ClientChoice(label=_('Client'))
     client = fields.FormField(ClientForm, label=_('Client Details'))
-    care = fields.FieldList(fields.FormField(CareTypeWrapperForm))
+    care = fields.FieldList(fields.FormField(CareTypeWrapperForm), min_entries=10)

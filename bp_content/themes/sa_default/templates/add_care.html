@@ -1,75 +1,143 @@
 {% extends base_layout %}
 
 {% block title %}
-    {% trans %}Add Care{% endtrans %} - {{ app_name }}
+  {% trans %}Add Care{% endtrans %} - {{ app_name }}
 {% endblock %}
 {% block header_title %}
-    {% trans %}Add Care{% endtrans %}
+  {% trans %}Add Care{% endtrans %}
 {% endblock %}
 
 {% block content %}
-    <form id="form_add_care" action="{{ url|safe }}" method="post" class="well form-horizontal">
-        <fieldset>
-            <input type="hidden" name="exception" value="{{ exception|e }}">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            {{ macros.field(form.client_select, label=_("Select Client"), default='new', class="input-xlarge focused") }}
-            <fieldset>
-                {{ macros.field(form.client.name_first, label=_("First Name"), placeholder=_("First")+" "+_("Name"), class="input-xlarge required") }}
-                {{ macros.field(form.client.name_last, label=_("Last Name"), placeholder=_("First")+" "+_("Name"), class="input-xlarge required") }}
-                {{ macros.field(form.client.dob, label=_("Date of Birth"), class="input-xlarge required") }}
-                {{ macros.field(form.client.sex, label=_("Sex"), class="input-xlarge required") }}
-                {{ macros.field(form.client.name_first, label=_("Name"), placeholder=_("First")+" "+_("Name"), class="input-xlarge required") }}
-                {{ macros.field(form.client.address.unit, label=_("Unit"), class="input-xlarge") }}
-                {{ macros.field(form.client.address.address1, label=_("Address 1"), class="input-xlarge required") }}
-                {{ macros.field(form.client.address.address2, label=_("Address 2"), class="input-xlarge") }}
-                {{ macros.field(form.client.address.suburb, label=_("Suburb"), class="input-xlarge required") }}
-                {{ macros.field(form.client.address.state, label=_("State"), class="input-xlarge required") }}
-            </fieldset>
-            <fieldset>
-                {% for care_section in form.care %}
-                    <fieldset>
-                        {% for care_type in care_section.care_type %}
-                            {{ macros.field(care_type.care_type, label=_("Care Type"), class="input-xlarge") }}
-                            {{ macros.field(care_type.care_type_other, label=_("Care Type"), class="input-xlarge") }}
-                        {% endfor %}
-                    </fieldset>
-                    <fieldset>
-                        {% for care_supplier in care_section.care_supplier %}
-                            <fieldset>
-                                {{ macros.field(care_supplier.supplier, label=_("Supplier"), class="input-xlarge") }}
-                                <fieldset>
-                                    {% for care_instance in care_supplier.care_instances %}
+  <form id="form_add_care" action="{{ url|safe }}" method="post" class="well form-horizontal">
+    <input type="hidden" name="exception" value="{{ exception|e }}">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+    <div class="accordion" id="form-accordion">
+      {{ macros.field(form.client_select, label=_("Select Client"), default='new', class="input-xlarge focused") }}
+      <div class="accordion-group">
+        <div class="accordion-heading">
+          <a class="accordion-toggle" data-toggle="collapse" data-parent="#form-accordion"
+             href="#client-group">
+            Client Info
+          </a>
+        </div>
+        <div id="client-group" class="accordion-inner collapse in">
+          <div class="form-inline">
+            {{ macros.field(form.client.name_first, label=_("First Name"), placeholder=_("First")+" "+_("Name"), class="input-xlarge required") }}
+            {{ macros.field(form.client.name_last, label=_("Last Name"), placeholder=_("Last")+" "+_("Name"), class="input-xlarge required") }}
+          </div>
+          {{ macros.field(form.client.dob, label=_("Date of Birth"), class="input-xlarge required") }}
+          {{ macros.field(form.client.sex, label=_("Sex"), class="input-xlarge required") }}
+          {{ macros.field(form.client.address.unit, label=_("Unit"), class="input-xlarge") }}
+          {{ macros.field(form.client.address.address1, label=_("Address 1"), class="input-xlarge required") }}
+          {{ macros.field(form.client.address.address2, label=_("Address 2"), class="input-xlarge") }}
+          {{ macros.field(form.client.address.suburb, label=_("Suburb"), class="input-xlarge required") }}
+          {{ macros.field(form.client.address.state, label=_("State"), class="input-xlarge required") }}
+        </div>
+      </div>
+      <div class="accordion-group">
+        <div class="accordion-heading">
+          <a class="accordion-toggle" data-toggle="collapse" data-parent="#form-accordion"
+             href="#care-group">
+            Care
+          </a>
+        </div>
+        <div id="care-group" class="accordion-inner collapse in">
+          <div class="accordion" id="care-accordion">
+            {% for care_section in form.care %}
+              <div class="accordion-group">
+                <div class="accordion-heading">
+                  <a class="accordion-toggle" data-toggle="collapse" data-parent="#care-accordion"
+                     href="#{{ care_section.id }}-group">
+                    Care Section Title - {{ care_section.id }}
+                  </a>
+                </div>
+                <div id="{{ care_section.id }}-group" class="accordion-inner collapse in">
+                  <div class="accordion" id="{{ care_section.id }}-accordion">
+                    <div class="accordion-group">
+                      <div class="accordion-heading">
+                        <a class="accordion-toggle" data-toggle="collapse"
+                           data-parent="#{{ care_section.id }}-accordion"
+                           href="#{{ care_section.id }}-care-type-group">
+                          Care Type
+                        </a>
+                      </div>
+                      <div id="{{ care_section.id }}-care-type-group" class="accordion-inner collapse in">
+                        {{ macros.field(care_section.care_type.care_type, label=_("Care Type"), class="input-xlarge care-type-selector") }}
+                        {{ macros.field(care_section.care_type.care_type_other, label=_("Other Care Type"), class="input-xlarge care-type-other") }}
+                      </div>
+                    </div>
+                    <div class="accordion-group">
+                      <div class="accordion-heading">
+                        <a class="accordion-toggle" data-toggle="collapse"
+                           data-parent="#{{ care_section.id }}-accordion"
+                           href="#{{ care_section.id }}-care-info-group">
+                          Care Details
+                        </a>
+                      </div>
+                      <div id="{{ care_section.id }}-care-info-group" class="accordion-inner collapse in">
+                        <div class="accordion" id="{{ care_section.id }}-suppliers-accordion">
+                          {% for care_supplier in care_section.care_supplier %}
+                            <div class="accordion-group">
+                              <div class="accordion-heading">
+                                <a class="accordion-toggle" data-toggle="collapse"
+                                   data-parent="#{{ care_section.id }}-suppliers-accordion"
+                                   href="#{{ care_supplier.id }}-group">
+                                  {{ care_supplier.id }}
+                                </a>
+                              </div>
+                              <div id="{{ care_supplier.id }}-group" class="accordion-inner collapse in">
+                                {{ macros.field(care_supplier.supplier, label=_("Supplier"), class="input-xlarge supplier-input") }}
+                                <div class="accordion" id="{{ care_supplier.id }}-group-accordion">
+                                  {% for care_instance in care_supplier.care_instances %}
+                                    <div class="accordion-group">
+                                      <div class="accordion-heading">
+                                        <a class="accordion-toggle" data-toggle="collapse"
+                                           data-parent="#{{ care_supplier.id }}-group-accordion"
+                                           href="#{{ care_instance.id }}-group">
+                                          {{ care_instance.id }}
+                                        </a>
+                                      </div>
+                                      <div id="{{ care_instance.id }}-group"
+                                           class="accordion-inner collapse in">
                                         <fieldset>
-                                            {{ macros.field(care_instance.date_start, label=_("Start Date"), class="input-xlarge required") }}
-                                            {{ macros.field(care_instance.date_end, label=_("End Date"), class="input-xlarge required") }}
-                                            {{ macros.field(care_instance.hours, label=_("Hours"), class="input-xlarge") }}
-                                            {{ macros.field(care_instance.minutes, label=_("Minutes"), class="input-xlarge") }}
-                                            {{ macros.field(care_instance.frequency, label=_("Frequency"), class="input-xlarge") }}
+                                          <legend>Dates</legend>
+                                          {{ macros.field(care_instance.date_start, label=_("Start Date"), class="input-xlarge date_start") }}
+                                          {{ macros.field(care_instance.date_end, label=_("End Date"), class="input-xlarge date_end") }}
                                         </fieldset>
-                                    {% endfor %}
-                                </fieldset>
-                            </fieldset>
-                        {% endfor %}
-                    </fieldset>
-                {% endfor %}
-            </fieldset>
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">{% trans %}Submit{% endtrans %}</button>
-            </div>
-        </fieldset>
-    </form>
+                                        <fieldset>
+                                          <legend>Care amount</legend>
+                                          {{ macros.field(care_instance.hours, label=_("Hours"), class="input-xlarge") }}
+                                          {{ macros.field(care_instance.minutes, label=_("Minutes"), class="input-xlarge") }}
+                                          {{ macros.field(care_instance.frequency, label=_("Frequency"), class="input-xlarge") }}
+                                        </fieldset>
+                                      </div>
+                                    </div>
+                                  {% endfor %}
+                                </div>
+                              </div>
+                            </div>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">{% trans %}Submit{% endtrans %}</button>
+        </div>
+      </div>
+    </div>
+  </form>
 {% endblock %}
 
 {% block mediaJS %}
-    <script>
-        $().ready(function () {
-            $("#form_add_care").validate({
-                errorPlacement: function (error, element) {
-                    element.parent().parent().addClass("error");
-                    error.addClass("help-inline").appendTo(element.parent());
-                }
-            });
-        });
-    </script>
+  <script src="/{{ theme }}/js/care_utils.js"></script>
+  <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
+  <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
 {% endblock %}
 

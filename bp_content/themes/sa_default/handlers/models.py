@@ -99,7 +99,7 @@ class SimplePriceModel(BaseModel):
 
 
 class PriceModelMixin(object):
-    price_model = ndb.KeyProperty(kind=SimplePriceModel)
+    price_models = ndb.KeyProperty(kind=SimplePriceModel, repeated=True)
 
 
 class CareSupplier(Supplier, PriceModelMixin):

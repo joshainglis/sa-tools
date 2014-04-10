@@ -46,8 +46,16 @@ class SupplierChoice(SelectField):
         super(SupplierChoice, self).__init__(*args, **kwargs)
         self.choices = [(x.key.id(), x.name) for x in models.Supplier.query().order(models.Supplier.name)]
 
+
 class ClientChoice(SelectField):
     def __init__(self, *args, **kwargs):
         super(ClientChoice, self).__init__(*args, **kwargs)
         self.choices = [(x.key.id(), x.name) for x in models.Client.query().order(models.Client.name_last)]
         self.choices.insert(0, ('new', "New Client"))
+
+
+class CareSupplierChoice(SelectField):
+    def __init__(self, *args, **kwargs):
+        super(CareSupplierChoice, self).__init__(*args, **kwargs)
+        self.choices = [(x.key.id(), x.name) for x in models.CareSupplier.query().order(models.CareSupplier.name)]
+        self.choices.insert(0, ('new', "New Care Supplier"))

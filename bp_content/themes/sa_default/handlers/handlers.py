@@ -302,7 +302,6 @@ class AddAidHandler(BaseHandler):
             self.form.notes.data = ''
         return self.render_template('add_aid.html')
 
-    @user_required
     def post(self):
         """ validate contact form """
 
@@ -374,7 +373,6 @@ class AjaxGetFullProductHandler(webapp2.RequestHandler):
 
 
 class EnterCare(BaseHandler):
-    @user_required
     def get(self):
         return self.render_template('add_care.html')
 
