@@ -68,6 +68,11 @@ class FormTranslations(object):
 
 
 class BaseForm(Form):
+    @classmethod
+    def append_field(cls, name, field):
+        setattr(cls, name, field)
+        return cls
+
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         try:
             formdata = formdata.request.POST
@@ -149,6 +154,7 @@ class ClientForm(BaseForm):
     sex = fields.SelectField(label=_('Sex'), choices=[('male', _("Male")),
                                                       ('female', _('Female'))])
     address = fields.FormField(AddressForm)
+    contact = fields.TextField(label=_("Contact Number"))
 
 
 class CareInstanceForm(BaseForm):

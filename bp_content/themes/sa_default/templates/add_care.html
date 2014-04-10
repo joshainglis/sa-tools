@@ -28,6 +28,8 @@
           </div>
           {{ macros.field(form.client.dob, label=_("Date of Birth"), class="input-xlarge required") }}
           {{ macros.field(form.client.sex, label=_("Sex"), class="input-xlarge required") }}
+
+          {{ macros.field(form.client.contact, label=_("Contact Number"), class="input-xlarge") }}
           {{ macros.field(form.client.address.unit, label=_("Unit"), class="input-xlarge") }}
           {{ macros.field(form.client.address.address1, label=_("Address 1"), class="input-xlarge required") }}
           {{ macros.field(form.client.address.address2, label=_("Address 2"), class="input-xlarge") }}

@@ -67,9 +67,9 @@ class Client(BaseModel):
     name_first = ndb.StringProperty(required=True)
     name_last = ndb.StringProperty(required=True)
     dob = ndb.DateProperty(required=True)
-    sex = ndb.StringProperty(required=True, choices=["Male", "Female"])
+    sex = ndb.StringProperty(required=True, choices=["male", "female"])
     address = ndb.StructuredProperty(Address)
-    contact = ndb.StringProperty(repeated=True)
+    contact = ndb.StringProperty()
 
 
 class Supplier(BaseModel):
