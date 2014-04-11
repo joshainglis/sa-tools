@@ -90,6 +90,11 @@
                               </div>
                               <div id="{{ care_supplier.id }}-group" class="accordion-inner collapse in">
                                 {{ macros.field(care_supplier.supplier, label=_("Supplier"), class="input-xlarge supplier-input") }}
+                                {{ macros.field(care_supplier.supplier_info.supplier_name, label=_("Supplier Name"), class="input-xlarge") }}
+                                {{ macros.field(care_supplier.supplier_info.email, label=_("Supplier Email"), class="input-xlarge") }}
+                                {{ macros.field(care_supplier.supplier_info.phone, label=_("Supplier Phone"), class="input-xlarge") }}
+                                {{ macros.field(care_supplier.supplier_info.website, label=_("Supplier Website"), class="input-xlarge") }}
+                                {{ macros.field(care_supplier.supplier_info.notes, label=_("Notes"), class="input-xlarge") }}
                                 <div class="accordion" id="{{ care_supplier.id }}-group-accordion">
                                   {% for care_instance in care_supplier.care_instances %}
                                     <div class="accordion-group">

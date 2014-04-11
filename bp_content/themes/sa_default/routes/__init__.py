@@ -21,6 +21,7 @@ _routes = [
     RedirectRoute('/view_suppliers/', handlers.ViewSuppliers, name='view-suppliers', strict_slash=True),
     RedirectRoute('/get_full_product_info/', handlers.AjaxGetFullProductHandler, name='ajax-aids', strict_slash=True),
     RedirectRoute('/get_client_info/', handlers.AjaxGetClientHandler, name='ajax-client', strict_slash=True),
+    RedirectRoute('/get_care_supplier_info/', handlers.AjaxGetCareSupplierHandler, name='ajax-care-supplier', strict_slash=True),
 ]
 
 def get_routes():

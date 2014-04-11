@@ -1,88 +1,93 @@
 {% extends base_layout %}
 
 {% block title %}
-    {% trans %}Add Aid{% endtrans %} - {{ app_name }}
+  {% trans %}Add Aid{% endtrans %} - {{ app_name }}
 {% endblock %}
 {% block header_title %}
-    {% trans %}Add Aid{% endtrans %}
+  {% trans %}Add Aid{% endtrans %}
 {% endblock %}
 {% block mediaCSS %}
-    <link rel="stylesheet" href="/{{ theme }}/css/jquery.dataTables.css">
+  <link rel="stylesheet" href="/{{ theme }}/css/jquery.dataTables.css">
 {% endblock %}
 
 {% block content %}
-    {% set show_fields = ['name', 'cost', 'supplier', 'tags'] %}
-    <div class="aid_customer_details">
-        <form class="form-inline" action="">
-            <label for="client_age">Client Age</label><input type="number" name="age" id="client_age"/>
-            <label>
-                Male
-                <input type="radio" name="sex" value="male">
-            </label>
-            <label>
-                Female
-                <input type="radio" name="sex" value="female">
-            </label>
-        </form>
+  {% set show_fields = ['name', 'qty', 'cost', 'supplier', 'tags'] %}
+  <div class="aid_customer_details">
+    <form class="form-inline" action="">
+      <label for="client_age">Client Age</label><input type="number" name="age" class="input-mini" id="client_age"/>
+      <label>
+        Male
+        <input type="radio" name="sex" value="male">
+      </label>
+      <label>
+        Female
+        <input type="radio" name="sex" value="female">
+      </label>
+    </form>
+  </div>
+  <div class="aid_view">
+    <div class="aid_table_select">
+      <table id="aid_table">
+        <thead>
+        <tr>
+          <th><input type="checkbox" class="checkbox" name="check-all" id="check-all"/></th>
+          {% for fld in show_fields %}
+            <th>{{ fld }}</th>
+          {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in table_data %}
+          <tr>
+            <td><input type="checkbox" class="checkbox" name="cb1" id="{{ row.key.id() }}"/></td>
+            <td><a href="/add_aid/?aid_id={{ row.key.urlsafe() }}">{{ row.name }}</a></td>
+            <td><input type="number" value="1" class="input-mini qty" id="{{ row.key.id() }}-qty" ></td>
+            <td>{{ "$%.2f"|format(row.cost) }}</td>
+            <td>{{ row.supplier.get().name }}</td>
+            <td>
+              {% for tag in row.tags %}
+                {{ tag }}<br/>
+              {% endfor %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
     </div>
-    <div class="aid_view">
-        <div class="aid_table_select">
-            <table id="aid_table">
-                <thead>
-                <tr>
-                    <th><input type="checkbox" class="checkbox" name="check-all" id="check-all"/></th>
-                    {% for fld in show_fields %}
-                        <th>{{ fld }}</th>
-                    {% endfor %}
-                </tr>
-                </thead>
-                <tbody>
-                {% for row in table_data %}
-                    <tr>
-                        <td><input type="checkbox" class="checkbox" name="cb1" id="{{ row.key.id() }}"/></td>
-                        <td>{{ row.name }}</td>
-                        <td>{{ "$%.2f"|format(row.cost) }}</td>
-                        <td>{{ row.supplier.get().name }}</td>
-                        <td>
-                            {% for tag in row.tags %}
-                                {{ tag }}<br/>
-                            {% endfor %}
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="copy-table">
-            <table id="ctable">
-                <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Supplier</th>
-                    <th>Initial Cost</th>
-                    <th>Cost per year</th>
-                    <th>Lifetime Cost</th>
-                </tr>
-                </thead>
-                <tfoot>
-                <tr>
-                    <td colspan="3" class="cost_per_year_title">Cost per year</td>
-                    <td colspan="2" class="cost_per_year_price" id="cost_per_year_price"></td>
-                </tr>
-                <tr>
-                    <td colspan="3" class="grand_total_title">Lifetime Cost</td>
-                    <td colspan="2" class="grand_total_price" id="grand_total_price"></td>
-                </tr>
-                </tfoot>
-                <tbody>
+    <div class="copy-table">
+      <table id="ctable">
+        <thead>
+        <tr>
+          <th>Name</th>
+          <th>Supplier</th>
+          <th>Initial Cost per Item</th>
+          <th>Maintenance per year</th>
+          <th>Replacement Frequency (years)</th>
+          <th>Quantity</th>
+          <th>Cost per year</th>
+          <th>Lifetime Cost</th>
+        </tr>
+        </thead>
+        <tfoot>
+        <tr>
+          <td colspan="3" class="cost_per_year_title">Cost per year</td>
 
-                </tbody>
-            </table>
-        </div>
+        </tr>
+        <tr>
+          <td colspan="3" class="grand_total_title">Total</td>
+          <td class="cost_per_year_price" id="cost_per_year_price"></td>
+          <td class="grand_total_price" id="grand_total_price"></td>
+        </tr>
+        </tfoot>
+        <tbody>
+
+        </tbody>
+      </table>
     </div>
+  </div>
 {% endblock %}
 {% block mediaJS %}
-    <script src="/{{ theme }}/js/jquery.js"></script>
-    <script src="/{{ theme }}/js/jquery.dataTables.min.js"></script>
-    <script src="/{{ theme }}/js/view_aids_utilities.js"></script>
+  <script src="/{{ theme }}/js/jquery.js"></script>
+  <script src="/{{ theme }}/js/jquery.dataTables.min.js"></script>
+  <script src="/{{ theme }}/js/view_aids_utilities.js"></script>
 {% endblock %}

@@ -248,10 +248,9 @@ class DeleteAccountHandler(BaseHandler):
 
 
 class AddSupplierHandler(BaseHandler):
-    @user_required
     def get(self, clear=True):
         if clear:
-            self.form.name.data = ''
+            self.form.supplier_name.data = ''
             self.form.email.data = ''
             self.form.phone.data = ''
             self.form.website.data = ''
@@ -259,13 +258,12 @@ class AddSupplierHandler(BaseHandler):
 
         return self.render_template('add_supplier.html')
 
-    @user_required
     def post(self):
         """ validate contact form """
 
         if not self.form.validate():
             return self.get(clear=False)
-        name = self.form.name.data.strip()
+        name = self.form.supplier_name.data.strip()
         email = self.form.email.data.lower()
         phone = self.form.phone.data.strip()
         website = self.form.website.data.strip().lower()
@@ -288,7 +286,6 @@ class AddSupplierHandler(BaseHandler):
 
 
 class AddAidHandler(BaseHandler):
-    @user_required
     def get(self, clear=True):
         if clear:
             self.form.name.data = ''
@@ -300,6 +297,18 @@ class AddAidHandler(BaseHandler):
             self.form.supplier.data = ''
             self.form.tags.data = ''
             self.form.notes.data = ''
+        edit_id = self.request.get('aid_id')
+        if edit_id:
+            aid = ndb.Key(urlsafe=edit_id).get()
+            self.form.name.data = aid.name
+            self.form.cost.data = aid.cost
+            self.form.maintenance.data = aid.maintenance
+            self.form.replacement.data = aid.replacement
+            self.form.installation.data = aid.installation
+            self.form.postage.data = aid.postage
+            self.form.supplier.data = aid.supplier.get().name
+            self.form.tags.data = aid.tags
+            self.form.notes.data = aid.notes
         return self.render_template('add_aid.html')
 
     def post(self):
@@ -317,7 +326,13 @@ class AddAidHandler(BaseHandler):
         tags = self.form.tags.data
         notes = self.form.notes.data.strip()
 
-        new_aid = Aid()
+        edit_id = self.request.get('aid_id')
+        logging.info(edit_id)
+        if edit_id:
+            new_aid = ndb.Key(urlsafe=edit_id).get()
+            logging.info(new_aid)
+        else:
+            new_aid = Aid()
         new_aid.name = name
         new_aid.cost = cost
         new_aid.maintenance = maintenance
@@ -396,6 +411,27 @@ class AjaxGetClientHandler(webapp2.RequestHandler):
         self.response.out.write(res)
 
 
+class AjaxGetCareSupplierHandler(webapp2.RequestHandler):
+    def post(self):
+        record_id = json.decode(self.request.body).get('record_id')
+        record = models.CareSupplier.get_by_id(int(record_id))
+        try:
+            record_dict = dict(
+                supplier_name=record.name,
+                email=record.email,
+                website=record.website,
+                phone=record.phone,
+                notes=record.notes,
+                price_models=[(x.id(), x.get.name()) for x in record.price_models],
+                error=False,
+            )
+        except AttributeError:
+            record_dict = {'error': True}
+        record_dict['id'] = record_id
+        res = json.encode(record_dict)
+        self.response.out.write(res)
+
+
 class EnterCare(BaseHandler):
     @webapp2.cached_property
     def form(self):
@@ -404,13 +440,8 @@ class EnterCare(BaseHandler):
     def get(self):
         return self.render_template('add_care.html')
 
-    def post(self):
-        # if not self.form.validate():
-        #     logging.warning('Did not validate, %s', self.form.errors)
-        #     return self.get()
-        customer_choice = self.form.client_select.data
-        logging.warning(customer_choice)
-        client_data = self.form.client.data
+    @staticmethod
+    def _handle_client(client_data, customer_choice):
         if customer_choice != 'new':
             client = models.Client.get_by_id(int(customer_choice))
             altered = not all([
@@ -441,6 +472,43 @@ class EnterCare(BaseHandler):
             client_key = client.put()
         else:
             client_key = client.key
+        return client_key
+
+    @staticmethod
+    def _handle_care_supplier(supplier_data, supplier_choice):
+        if supplier_choice != 'new':
+            supplier = models.CareSupplier.get_by_id(int(supplier_choice))
+            supplier = models.CareSupplier
+            altered = not all([
+                supplier.name == supplier_data["supplier_name"],
+                supplier.email == supplier_data["email"],
+                supplier.phone == supplier_data["phone"],
+                supplier.website == supplier_data["website"],
+                supplier.notes == supplier_data["notes"],
+            ])
+        else:
+            supplier = models.Client()
+            altered = True
+        if altered:
+            supplier.name = supplier_data["supplier_name"]
+            supplier.email = supplier_data["email"]
+            supplier.phone = supplier_data["phone"]
+            supplier.website = supplier_data["website"]
+            supplier.notes = supplier_data["notes"]
+            supplier_key = supplier.put()
+        else:
+            supplier_key = supplier.key
+        return supplier_key
+
+    def post(self):
+        # if not self.form.validate():
+        #     logging.warning('Did not validate, %s', self.form.errors)
+        #     return self.get()
+        client_key = self._handle_client(client_data=self.form.client.data,
+                                         customer_choice=self.form.client_select.data)
+
+
+
         # care_data = self.form.care.data
         # for care_type_wrapper in care_data:
         #     care_types = [x.care_type.data if x.care_type.data is not 'other' else x.care_type_other.data for x in

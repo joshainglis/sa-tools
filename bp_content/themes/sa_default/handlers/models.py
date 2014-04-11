@@ -93,6 +93,7 @@ class Aid(BaseModel):
 
 
 class SimplePriceModel(BaseModel):
+    model_name = ndb.TextProperty()
     log_model = ndb.BooleanProperty(required=True, default=False)
     intercept = ndb.FloatProperty()
     slope = ndb.FloatProperty()
@@ -115,6 +116,7 @@ class CareInstance(BaseModel):
     customer = ndb.KeyProperty(kind=Client)
     category = ndb.StringProperty(repeated=True)
     supplier = ndb.KeyProperty(kind=CareSupplier)
+    price_model = ndb.KeyProperty(kind=SimplePriceModel)
     period = ndb.StringProperty()
     start = ndb.DateProperty(required=True)
     end = ndb.DateProperty(required=True)

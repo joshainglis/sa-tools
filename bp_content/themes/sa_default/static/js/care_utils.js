@@ -40,7 +40,39 @@ $().ready(function () {
                     }
                 }
             });
+        }
+    });
 
+    $(".supplier-input").change(function () {
+        // care-0-care_supplier-0-supplier_info-supplier_name
+        // care-0-care_supplier-0-supplier
+        var s = $(this);
+        var i = s.id;
+        if (s.val() === 'new') {
+            $("#" + i + "_info-supplier_name").val('');
+            $("#" + i + "_info-email").val('');
+            $("#" + i + "_info-phone").val('');
+            $("#" + i + "_info-website").val('');
+            $("#" + i + "_info-notes").val('');
+        } else {
+            $.ajax({
+                type: "POST",
+                url: "/get_care_supplier_info/",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({'record_id': s.val()}),
+                dataType: 'json',
+                success: function (response) {
+                    if (!response.error) {
+                        $("#" + i + "_info-supplier_name").val(response.supplier_name);
+                        $("#" + i + "_info-email").val(response.email);
+                        $("#" + i + "_info-phone").val(response.phone);
+                        $("#" + i + "_info-website").val(response.website);
+                        $("#" + i + "_info-notes").val(response.notes);
+                    } else {
+                        console.log("Ajax failed!: Client:" + s.val())
+                    }
+                }
+            });
         }
     });
 
@@ -49,10 +81,6 @@ $().ready(function () {
             element.parent().parent().addClass("error");
             error.addClass("help-inline").appendTo(element.parent());
         }
-    });
-
-    $(".supplier-input").change(function (o) {
-        $("#" + o.id).parent().prev().children().first().html(o.html())
     });
 
     $(".care-type-other").on('input', function (o) {

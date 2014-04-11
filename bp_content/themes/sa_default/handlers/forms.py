@@ -38,8 +38,7 @@ NOTES_FIELD_VALIDATORS = [validators.Length(max=65536)]
 PASSWORD_FIELD_VALIDATORS = [validators.DataRequired(),
                              validators.Length(max=FIELD_MAXLENGTH, message=_(
                                  "Field cannot be longer than %(max)d characters."))]
-TAG_FIELD_VALIDATORS = [validators.Required(),
-                        AnyOfList(TAGS)]
+TAG_FIELD_VALIDATORS = [validators.Required()]
 PRICE_FIELD_VALIDATORS = [validators.NumberRange(min=0.0)]
 
 CARE_TYPE_CHOICES = [('Transfers', 'Transfers'),
@@ -109,7 +108,7 @@ class ContactForm(EmailMixin):
 
 
 class SupplierForm(BaseForm):
-    name = fields.TextField(_('Name'), NAME_FIELD_VALIDATORS)
+    supplier_name = fields.TextField(_('Name'), NAME_FIELD_VALIDATORS)
     email = fields.TextField(_('Email'), EMAIL_FIELD_VALIDATORS)
     phone = fields.TextField(_('Phone'), PHONE_FIELD_VALIDATORS)
     website = fields.TextField(_('Website'), WEBSITE_FIELD_VALIDATORS)
@@ -179,7 +178,7 @@ class CareTypeForm(BaseForm):
 class CareSupplierForm(BaseForm):
     supplier = CareSupplierChoice(label=_('Supplier'))
     supplier_info = fields.FormField(CareSupplierInputForm)
-    care_instances = fields.FieldList(fields.FormField(CareInstanceForm), min_entries=3)
+    care_instances = fields.FieldList(fields.FormField(CareInstanceForm), min_entries=2)
 
 
 class CareTypeWrapperForm(BaseForm):
@@ -190,4 +189,4 @@ class CareTypeWrapperForm(BaseForm):
 class CareForm(BaseForm):
     client_select = ClientChoice(label=_('Client'))
     client = fields.FormField(ClientForm, label=_('Client Details'))
-    care = fields.FieldList(fields.FormField(CareTypeWrapperForm), min_entries=10)
+    care = fields.FieldList(fields.FormField(CareTypeWrapperForm), min_entries=2)

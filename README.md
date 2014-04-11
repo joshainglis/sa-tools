@@ -242,3 +242,8 @@ these [amazing people](https://github.com/coto/gae-boilerplate/graphs/contributo
 + [f1shear](https://github.com/f1shear)
 + [presveva](https://github.com/presveva)
 + [Sorced-Jim](https://github.com/sorced-Jim)
+
+Notes
+-----
+
++ If using wtforms' FormField, avoid using naming any of the fields **`name`**. This causes all sorts of problems with jinja2
