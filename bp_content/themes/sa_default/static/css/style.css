@@ -27,3 +27,9 @@ th {
   vertical-align: top;
   margin-right: 50px;
 }
+.input-micro {
+  width: 40px;
+}
+.top-buffer {
+  margin-top: 80px;
+}

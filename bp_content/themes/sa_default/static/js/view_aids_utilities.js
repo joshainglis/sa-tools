@@ -107,7 +107,7 @@ var actuary = {
 
 $(document).ready(function () {
     'use strict';
-    var disp, ctable, age, sex, yr_total, lf_total, yr_cell, t_cell;
+    var disp, ctable, age, sex, life, yr_total, lf_total, yr_cell, t_cell;
 
     disp = {};
     ctable = $('#ctable');
@@ -115,6 +115,7 @@ $(document).ready(function () {
     t_cell = $('#grand_total_price');
     age = null;
     sex = null;
+    life = null;
     yr_total = 0;
     lf_total = 0;
 
@@ -134,8 +135,10 @@ $(document).ready(function () {
         row_id = parseInt(sel_id.substring(1, sel_id.length - 4));
         val = parseInt(selector.val());
         if (isNaN(val) || val < 0) val = 0;
-        disp[row_id].qty = val;
-        return disp[row_id].qty
+        if (disp.hasOwnProperty(row_id)) {
+            disp[row_id].qty = val;
+        }
+        return val;
     }
 
     function get_qty_from_row_id(rid) {
@@ -200,10 +203,10 @@ $(document).ready(function () {
     }
 
     function calculate_lifetime(qty, initial, yearly) {
-        if (age === null || sex === null) {
-            return false;
+        if (life !== null) {
+            return (life * yearly) + (qty * initial);
         }
-        return actuary[Math.round(age).toString()][sex] * (yearly + (qty * initial));
+        return false;
     }
 
     function calculate_totals() {
@@ -224,30 +227,43 @@ $(document).ready(function () {
     }
 
     function recalculate_rows() {
-        var lt, key, lt_cell_tmp, yr, tbl, yr_cell_tmp;
+        var lt, key, lt_cell_tmp, yr, tbl, yr_cell_tmp, qty_cell_tmp;
         tbl = $('#ctable');
         for (key in disp) {
             if (disp.hasOwnProperty(key)) {
                 lt_cell_tmp = tbl.find('#' + key + ' .table_cost_life');
                 yr_cell_tmp = tbl.find('#' + key + ' .table_cost_yrly');
+                qty_cell_tmp = tbl.find("#" + key + " .table_quantity");
                 yr = calculate_yearly(disp[key].qty, disp[key].cost, disp[key].maintenance, disp[key].replacement);
                 disp[key].yearly = yr;
                 lt = calculate_lifetime(disp[key].qty, disp[key].cost, disp[key].yearly);
                 disp[key].lifetime = lt;
+                qty_cell_tmp.text(disp[key].qty);
                 lt_cell_tmp.text(format_currency(lt));
                 yr_cell_tmp.text(format_currency(yr));
             }
         }
     }
 
+    function get_expected_life() {
+        if (age !== null && sex !== null) {
+            life = actuary[Math.round(age).toString()][sex];
+            $('input[name="life-expectancy"]').val(life + age);
+            $("#life_left").html("Calculations based on client living for a further <em>" + life + " years</em>.");
+        }
+    }
+
     $('input[name="sex"]').change(function () {
         sex = this.value;
+        get_expected_life();
         recalculate_rows();
         calculate_totals();
         event.preventDefault();
     });
 
-    $('input[name="age"]').change(function () {
+    $('input[name="age"]').on('input', function () {
+        console.log("EDIT AGE");
+
         var tmp;
         tmp = parseFloat($('input[name="age"]').val());
         if (isNaN(tmp)) {
@@ -261,10 +277,25 @@ $(document).ready(function () {
                 tmp = 100;
             }
             age = tmp;
+            get_expected_life();
             recalculate_rows();
             calculate_totals();
         }
         event.preventDefault();
+    });
+
+    $('#client_life_expectancy').on("input", function () {
+        console.log("EDIT LIFE");
+        if (age !== null) {
+            var life_temp = parseFloat($(this).val());
+            console.log(age + '' + life_temp + " " + this);
+            if (!isNaN(life_temp)) {
+                life = life_temp - age;
+                $("#life_left").html("Calculations based on client living for a further <em>" + life + " years</em>.");
+                recalculate_rows();
+                calculate_totals();
+            }
+        }
     });
 
     function add_row(response) {
@@ -278,17 +309,29 @@ $(document).ready(function () {
                 response.maintenance,
                 response.replacement
             );
-
-            if (response.replacement === 0) {
-                rpl = "NA"
-            } else if (response.replacement < 1) {
+            freq = response.replacement;
+            if (freq === 0) {
+                rpl = "Not replaced"
+            } else if (response.replacement <= 0.92) {
                 freq = response.replacement * 12;
-                if (freq < 1) {
+                if (freq < 0.8) {
+                    // Less than a month
                     freq = freq * 4;
-                    //TODO Continue from here.
+                    if (freq < 1) rpl = "More than once per week";
+                    else if (freq < 1.5) rpl = "Weekly";
+                    else rpl = Math.round(freq) + " times per month";
                     //TODO Add life left input
                     //TODO Add extra columns to output table
+                } else if (freq < 1.5) {
+                    rpl = 'Monthly'
+                } else {
+                    rpl = "Every " + Math.round(freq) + " Months"
                 }
+            } else if (freq < 1.08) {
+                rpl = "Yearly"
+            } else {
+                var freq_round = Math.round(freq * 10) / 10;
+                rpl = "Every " + Math.round(freq * 10) / 10 + " years"
             }
             lifetime = calculate_lifetime(qty, response.cost, yearly);
             disp[response.id].yearly = yearly;
@@ -299,7 +342,8 @@ $(document).ready(function () {
                     '<td class="table_supplier">' + response.supplier + '</td>' +
                     '<td class="table_cost_init">' + format_currency(response.cost) + '</td>' +
                     '<td class="table_maintenance">' + format_currency(response.maintenance) + '</td>' +
-                    '<td class="table_cost_init">' + response.replacement + ' years</td>' +
+                    '<td class="table_replacement">' + rpl + '</td>' +
+                    '<td class="table_quantity">' + qty + '</td>' +
                     '<td class="table_cost_yrly">' + format_currency(yearly) + '</td>' +
                     '<td class="table_cost_life">' + format_currency(lifetime) + '</td>' +
                     '</tr>'
@@ -372,12 +416,12 @@ $(document).ready(function () {
         });
     });
 
-    $(".qty").on('input', function() {
-        get_qty($('#'+this.id));
+    $(".qty").on('input', function () {
+        get_qty($('#' + this.id));
         recalculate_rows();
         calculate_totals();
     });
 
     $('#aid_table').dataTable();
-
+    $('select[name="aid_table_length"]').addClass("input-mini")
 });
