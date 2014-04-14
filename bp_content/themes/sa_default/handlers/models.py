@@ -90,6 +90,7 @@ class Aid(BaseModel):
     notes = ndb.TextProperty(required=False)
     supplier = ndb.KeyProperty(kind=Supplier)
     tags = ndb.StringProperty(repeated=True)
+    image = ndb.BlobKeyProperty()
 
 
 class SimplePriceModel(BaseModel):

@@ -126,6 +126,7 @@ class AidForm(BaseForm, CreationDetailsMixin):
     notes = fields.TextAreaField(_('Message'), NOTES_FIELD_VALIDATORS)
     supplier = SupplierChoice(_('Supplier'), coerce=int)
     tags = BetterTagListField(_('Tags'), TAG_FIELD_VALIDATORS)
+    image = fields.FileField(_("Image"))
     pass
 
 
