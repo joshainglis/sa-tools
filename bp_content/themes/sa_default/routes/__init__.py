@@ -23,6 +23,7 @@ _routes = [
     RedirectRoute('/get_client_info/', handlers.AjaxGetClientHandler, name='ajax-client', strict_slash=True),
     RedirectRoute('/get_care_supplier_info/', handlers.AjaxGetCareSupplierHandler, name='ajax-care-supplier', strict_slash=True),
     RedirectRoute('/upload_csv/', handlers.UploadCSV, name='upload-csv', strict_slash=True),
+    RedirectRoute('/upload_image/', handlers.UploadImageHandler, name='upload-image', strict_slash=True),
 ]
 
 def get_routes():

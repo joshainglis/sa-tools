@@ -130,6 +130,10 @@ class AidForm(BaseForm, CreationDetailsMixin):
     pass
 
 
+class ImageUploadForm(BaseForm):
+    image = fields.FileField(_("Image"))
+
+
 class AddressForm(BaseForm):
     unit = fields.TextField(label=_('Unit'))
     address1 = fields.TextField(label=_('Unit'))

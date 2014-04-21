@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block content %}
-    <form id="form_add_aid" action="{{ url|safe }}" method="post" class="well form-horizontal">
+    <form id="form_add_aid" action="{{ url|safe }}" enctype="multipart/form-data" method="post" class="well form-horizontal">
         <fieldset>
             <input type="hidden" name="exception" value="{{ exception|e }}">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -21,7 +21,7 @@
             {{ macros.field(form.supplier, label=_("Supplier"), class="input-xlarge") }}
             {{ macros.field(form.tags, label=_("Tags"), placeholder=_("Enter Product")+" "+_("Tags"), class="input-xlarge") }}
             {{ macros.field(form.notes, label=_("Notes"), class="input-xlarge", cols="40", rows="8") }}
-            {{ macros.field(form.image, label=_("Image"), class="input-xlarge") }}
+            {{ macros.field(form.image, label=_("Image"), class="input-xlarge", name="aid_img") }}
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">{% trans %}Submit{% endtrans %}</button>
             </div>

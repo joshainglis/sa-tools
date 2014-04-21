@@ -13,11 +13,13 @@ import logging
 # related third party imports
 import os
 from google.appengine.api.app_identity import app_identity
+from google.appengine.ext.db import Blob
 from google.appengine.ext.ndb.key import Key
 import webapp2
 from google.appengine.ext import ndb
 import bp_includes.lib.cloudstorage as gcs
 from google.appengine.api import taskqueue
+from google.appengine.api import images
 from webapp2_extras import json
 from webapp2_extras.auth import InvalidAuthIdError, InvalidPasswordError
 from webapp2_extras.i18n import gettext as _
@@ -288,6 +290,14 @@ class AddSupplierHandler(BaseHandler):
         return forms.SupplierForm(self)
 
 
+class UploadImageHandler(BaseHandler):
+    def get(self):
+        return self.render_template('upload_image.html')
+
+    @webapp2.cached_property
+    def form(self):
+        return forms.ImageUploadForm(self)
+
 class AddAidHandler(BaseHandler):
     def get(self, clear=True):
         if clear:
@@ -313,7 +323,7 @@ class AddAidHandler(BaseHandler):
             self.form.supplier.data = aid.supplier.get().name
             self.form.tags.data = aid.tags
             self.form.notes.data = aid.notes
-            self.form.image.data = aid.image
+            self.form.image.data = ''
         return self.render_template('add_aid.html')
 
     def post(self):
@@ -330,6 +340,10 @@ class AddAidHandler(BaseHandler):
         supplier = self.form.supplier.data
         tags = self.form.tags.data
         notes = self.form.notes.data.strip()
+        ndb.BlobProperty()
+        self.get
+        im = Blob(images.resize(self.request.get('aid_img'), 96, 96))
+        Blob(im)
 
         edit_id = self.request.get('aid_id')
         logging.info(edit_id)
@@ -541,37 +555,13 @@ class UploadCSV(webapp2.RedirectHandler):
         self.response.write('Using bucket name: ' + bucket_name + '\n\n')
 
         bucket = '/' + bucket_name
-        filename = bucket + '/demo-testfile'
-        self.tmp_filenames_to_clean_up = []
+        # filename = bucket + '/old_data/aid_table.txt'
+        filename = '/sa-tools.appspot.com/old_data/aid_table.txt'
+        self.read_file(filename)
+        images.blobstore.create_gs_key()
 
-        try:
-            self.create_file(filename)
-            self.response.write('\n\n')
-
-            self.read_file(filename)
-            self.response.write('\n\n')
-
-            self.stat_file(filename)
-            self.response.write('\n\n')
-
-            self.create_files_for_list_bucket(bucket)
-            self.response.write('\n\n')
-
-            self.list_bucket(bucket)
-            self.response.write('\n\n')
-
-            self.list_bucket_directory_mode(bucket)
-            self.response.write('\n\n')
-
-        except Exception, e:  # pylint: disable=broad-except
-            logging.error(e)
-            self.delete_files()
-            self.response.write('\n\nThere was an error running the demo! '
-                                'Please check the logs for more details.\n')
-
-        else:
-            self.delete_files()
-            self.response.write('\n\nThe demo ran successfully!\n')
+    def create_file2(self, file_name):
+        gcs_file = gcs.open()
 
     def create_file(self, filename):
         """Create a file.
@@ -640,8 +630,7 @@ class UploadCSV(webapp2.RedirectHandler):
             if count != page_size or count == 0:
                 break
             # pylint: disable=undefined-loop-variable
-            stats = gcs.listbucket(bucket + '/foo', max_keys=page_size,
-                                   marker=stat.filename)
+            stats = gcs.listbucket(bucket + '/foo', max_keys=page_size, marker=stat.filename)
 
     def list_bucket_directory_mode(self, bucket):
         self.response.write('Listbucket directory mode result:\n')

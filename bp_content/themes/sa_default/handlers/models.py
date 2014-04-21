@@ -93,6 +93,10 @@ class Aid(BaseModel):
     image = ndb.BlobKeyProperty()
 
 
+class ImageModel(BaseModel):
+    image = ndb.BlobKeyProperty()
+
+
 class SimplePriceModel(BaseModel):
     model_name = ndb.TextProperty()
     log_model = ndb.BooleanProperty(required=True, default=False)
