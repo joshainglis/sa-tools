@@ -9,23 +9,28 @@
     Routes are setup in routes.py and added in main.py
 """
 # standard library imports
-import logging
-# related third party imports
 import os
-from google.appengine.api.app_identity import app_identity
-from google.appengine.ext.db import Blob
-from google.appengine.ext.ndb.key import Key
+import logging
 import webapp2
-from google.appengine.ext import ndb
-import bp_includes.lib.cloudstorage as gcs
-from google.appengine.api import taskqueue
+import mimetypes
+
+# related third party imports
 from google.appengine.api import images
+from google.appengine.api import taskqueue
+from google.appengine.api.app_identity import app_identity
+from google.appengine.ext import blobstore
+from google.appengine.ext.ndb.key import Key
+from google.appengine.ext import ndb
 from webapp2_extras import json
 from webapp2_extras.auth import InvalidAuthIdError, InvalidPasswordError
 from webapp2_extras.i18n import gettext as _
+
+
 from bp_content.themes.sa_default.handlers import models
 from bp_content.themes.sa_default.handlers.models import Supplier, Aid
+import bp_content.themes.sa_default.external.cloudstorage as gcs
 from bp_includes.external import httpagentparser
+
 # local application/library specific imports
 import bp_includes.lib.i18n as i18n
 from bp_includes.lib.basehandler import BaseHandler
@@ -284,7 +289,6 @@ class AddSupplierHandler(BaseHandler):
 
         return self.get()
 
-
     @webapp2.cached_property
     def form(self):
         return forms.SupplierForm(self)
@@ -297,6 +301,7 @@ class UploadImageHandler(BaseHandler):
     @webapp2.cached_property
     def form(self):
         return forms.ImageUploadForm(self)
+
 
 class AddAidHandler(BaseHandler):
     def get(self, clear=True):
@@ -525,8 +530,6 @@ class EnterCare(BaseHandler):
         #     return self.get()
         client_key = self._handle_client(client_data=self.form.client.data,
                                          customer_choice=self.form.client_select.data)
-
-
 
         # care_data = self.form.care.data
         # for care_type_wrapper in care_data:

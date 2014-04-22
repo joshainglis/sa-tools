@@ -94,7 +94,9 @@ class Aid(BaseModel):
 
 
 class ImageModel(BaseModel):
-    image = ndb.BlobKeyProperty()
+    filename = ndb.StringProperty()
+    extension = ndb.ComputedProperty(lambda self: self.filename.rsplit('.', 1)[1].lower())
+    serving_url = ndb.StringProperty(default=None)
 
 
 class SimplePriceModel(BaseModel):
