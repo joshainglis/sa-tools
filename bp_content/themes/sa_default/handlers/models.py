@@ -80,6 +80,12 @@ class Supplier(BaseModel):
     notes = ndb.TextProperty(required=False)
 
 
+class ImageModel(ndb.Model):
+    filename = ndb.StringProperty()
+    extension = ndb.ComputedProperty(lambda self: self.filename.rsplit('.', 1)[1].lower())
+    serving_url = ndb.StringProperty(default=None)
+
+
 class Aid(BaseModel):
     name = ndb.StringProperty(required=True)
     cost = PriceProperty(required=True)
@@ -90,13 +96,7 @@ class Aid(BaseModel):
     notes = ndb.TextProperty(required=False)
     supplier = ndb.KeyProperty(kind=Supplier)
     tags = ndb.StringProperty(repeated=True)
-    image = ndb.BlobKeyProperty()
-
-
-class ImageModel(BaseModel):
-    filename = ndb.StringProperty()
-    extension = ndb.ComputedProperty(lambda self: self.filename.rsplit('.', 1)[1].lower())
-    serving_url = ndb.StringProperty(default=None)
+    image = ndb.StructuredProperty(ImageModel)
 
 
 class SimplePriceModel(BaseModel):

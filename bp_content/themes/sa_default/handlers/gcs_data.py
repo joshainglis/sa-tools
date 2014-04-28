@@ -3,19 +3,12 @@ __author__ = 'joshainglis'
 from google.appengine.ext import blobstore
 from google.appengine.api import app_identity, images
 import bp_content.themes.sa_default.external.cloudstorage as gcs
-from google.appengine.ext import ndb
-from bp_content.themes.sa_default.handlers.models import Image
+from bp_content.themes.sa_default.handlers.models import ImageModel as Dynamics
 import os
 import mimetypes
 # bonus, zip Dynamics entities and binary GCS blobs
 import zipfile
 import logging
-
-
-class Dynamics(ndb.Model):
-    filename = ndb.StringProperty()
-    extension = ndb.ComputedProperty(lambda self: self.filename.rsplit('.', 1)[1].lower())
-    serving_url = ndb.StringProperty(default=None)
 
 
 default_bucket = app_identity.get_default_gcs_bucket_name()
@@ -27,7 +20,7 @@ def gcs_serving_url(dyn):
 
     gcs_file_name = '/%s/%s' % (default_bucket, dyn.filename)
 
-    if dyn.extension in ['png', 'jpg', 'gif']:
+    if dyn.extension in ['png', 'jpg', 'gif', 'jpeg']:
         dyn.serving_url = images.get_serving_url(
             blobstore.create_gs_key('/gs' + gcs_file_name), secure_url=True)
     elif gae_development:
@@ -61,9 +54,14 @@ def gcs_write_blob(dyn, blob):
         content_type += b'; charset=utf-8'
 
     with gcs.open(gcs_file_name, 'w', content_type=content_type,
-                  options={b'x-goog-acl': b'public-read'}) as f:
-        f.write(blob)
+                  options={b'x-goog-acl': b'private'}) as f:
 
+        # f.write(images.resize(blob, width=100, height=100))
+
+        try:
+            f.write(images.resize(blob, width=100, height=100))
+        except:
+            f.write(blob)
     return gcs_file_name
 
 
@@ -94,7 +92,7 @@ def gcs_zip_dynamics():
                     z.writestr(b'%s/content_type.txt' % member_dir, gcs_content_type(each))
 
 
-# example create a serving url
-entity = Dynamics(id='test.pdf', filename='test.pdf')
-gcs_serving_url(entity)
-entity.put()
+# # example create a serving url
+# entity = Dynamics(id='test.pdf', filename='test.pdf')
+# gcs_serving_url(entity)
+# entity.put()

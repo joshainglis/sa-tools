@@ -336,8 +336,12 @@ $(document).ready(function () {
             lifetime = calculate_lifetime(qty, response.cost, yearly);
             disp[response.id].yearly = yearly;
             disp[response.id].lifetime = lifetime;
+            console.log(response);
+            console.log(response.image === null);
+            var im = response.image === null ? "" : '<img src="' + response.image + '">';
             rows = $(
                 '<tr id="' + response.id + '">' +
+                    '<td class="table_image">' + im + '</td>' +
                     '<td class="table_name">' + response.name + '</td>' +
                     '<td class="table_supplier">' + response.supplier + '</td>' +
                     '<td class="table_cost_init">' + format_currency(response.cost) + '</td>' +

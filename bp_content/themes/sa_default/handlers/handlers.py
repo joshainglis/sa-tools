@@ -9,26 +9,25 @@
     Routes are setup in routes.py and added in main.py
 """
 # standard library imports
+from cgi import FieldStorage
 import os
 import logging
 import webapp2
-import mimetypes
 
 # related third party imports
 from google.appengine.api import images
 from google.appengine.api import taskqueue
 from google.appengine.api.app_identity import app_identity
-from google.appengine.ext import blobstore
 from google.appengine.ext.ndb.key import Key
 from google.appengine.ext import ndb
 from webapp2_extras import json
 from webapp2_extras.auth import InvalidAuthIdError, InvalidPasswordError
 from webapp2_extras.i18n import gettext as _
 
-
 from bp_content.themes.sa_default.handlers import models
 from bp_content.themes.sa_default.handlers.models import Supplier, Aid
 import bp_content.themes.sa_default.external.cloudstorage as gcs
+from bp_content.themes.sa_default.handlers import gcs_data
 from bp_includes.external import httpagentparser
 
 # local application/library specific imports
@@ -146,6 +145,7 @@ class SecureRequestHandler(BaseHandler):
     Only accessible to users that are logged in
     """
 
+    # noinspection PyUnusedLocal
     @user_required
     def get(self, **kwargs):
         user_session = self.user
@@ -169,14 +169,15 @@ class SecureRequestHandler(BaseHandler):
 
 
 class DeleteAccountHandler(BaseHandler):
+    # noinspection PyUnusedLocal
     @user_required
     def get(self, **kwargs):
         chtml = captcha.displayhtml(
             public_key=self.app.config.get('captcha_public_key'),
             use_ssl=(self.request.scheme == 'https'),
             error=None)
-        if self.app.config.get('captcha_public_key') == "PUT_YOUR_RECAPCHA_PUBLIC_KEY_HERE" or \
-                        self.app.config.get('captcha_private_key') == "PUT_YOUR_RECAPCHA_PUBLIC_KEY_HERE":
+        if self.app.config.get('captcha_public_key') == "PUT_YOUR_RECAPCHA_PUBLIC_KEY_HERE" or self.app.config.get(
+                'captcha_private_key') == "PUT_YOUR_RECAPCHA_PUBLIC_KEY_HERE":
             chtml = '<div class="alert alert-error"><strong>Error</strong>: You have to ' \
                     '<a href="http://www.google.com/recaptcha/whyrecaptcha" target="_blank">sign up ' \
                     'for API keys</a> in order to use reCAPTCHA.</div>' \
@@ -187,18 +188,19 @@ class DeleteAccountHandler(BaseHandler):
         }
         return self.render_template('delete_account.html', **params)
 
+    # noinspection PyUnusedLocal
     def post(self, **kwargs):
         challenge = self.request.POST.get('recaptcha_challenge_field')
         response = self.request.POST.get('recaptcha_response_field')
         remote_ip = self.request.remote_addr
 
-        cResponse = captcha.submit(
+        c_response = captcha.submit(
             challenge,
             response,
             self.app.config.get('captcha_private_key'),
             remote_ip)
 
-        if cResponse.is_valid:
+        if c_response.is_valid:
             # captcha was valid... carry on..nothing to see here
             pass
         else:
@@ -238,7 +240,6 @@ class DeleteAccountHandler(BaseHandler):
                     msg = _("The account has been successfully deleted.")
                     self.add_message(msg, 'success')
                     return self.redirect_to('home')
-
 
             except (InvalidAuthIdError, InvalidPasswordError), e:
                 # Returns error message to self.response.write in
@@ -285,7 +286,7 @@ class AddSupplierHandler(BaseHandler):
                                 website=website,
                                 notes=notes)
 
-        new_supplier_key = new_supplier.put()
+        new_supplier.put()
 
         return self.get()
 
@@ -304,18 +305,7 @@ class UploadImageHandler(BaseHandler):
 
 
 class AddAidHandler(BaseHandler):
-    def get(self, clear=True):
-        if clear:
-            self.form.name.data = ''
-            self.form.cost.data = ''
-            self.form.maintenance.data = ''
-            self.form.replacement.data = ''
-            self.form.installation.data = ''
-            self.form.postage.data = ''
-            self.form.supplier.data = ''
-            self.form.tags.data = ''
-            self.form.notes.data = ''
-            self.form.image.data = ''
+    def get(self):
         edit_id = self.request.get('aid_id')
         if edit_id:
             aid = ndb.Key(urlsafe=edit_id).get()
@@ -328,14 +318,13 @@ class AddAidHandler(BaseHandler):
             self.form.supplier.data = aid.supplier.get().name
             self.form.tags.data = aid.tags
             self.form.notes.data = aid.notes
-            self.form.image.data = ''
         return self.render_template('add_aid.html')
 
     def post(self):
         """ validate contact form """
 
         if not self.form.validate():
-            return self.get(clear=False)
+            return self.get()
         name = self.form.name.data.strip()
         cost = self.form.cost.data
         maintenance = self.form.maintenance.data
@@ -345,13 +334,9 @@ class AddAidHandler(BaseHandler):
         supplier = self.form.supplier.data
         tags = self.form.tags.data
         notes = self.form.notes.data.strip()
-        ndb.BlobProperty()
-        self.get
-        im = Blob(images.resize(self.request.get('aid_img'), 96, 96))
-        Blob(im)
+        field_storage = self.form.image.data
 
         edit_id = self.request.get('aid_id')
-        logging.info(edit_id)
         if edit_id:
             new_aid = ndb.Key(urlsafe=edit_id).get()
             logging.info(new_aid)
@@ -367,9 +352,15 @@ class AddAidHandler(BaseHandler):
         new_aid.tags = tags
         new_aid.notes = notes
 
-        new_aid_key = new_aid.put()
+        if isinstance(field_storage, FieldStorage):
+            dyn = models.ImageModel(id=field_storage.filename, filename=field_storage.filename)
+            gcs_data.gcs_write_blob(dyn, field_storage.file.read())
+            gcs_data.gcs_serving_url(dyn)
+            new_aid.image = dyn
 
-        return self.get()
+        new_aid.put()
+
+        return self.redirect('/add_aid')
 
     @webapp2.cached_property
     def form(self):
@@ -403,6 +394,12 @@ class AjaxGetFullProductHandler(webapp2.RequestHandler):
                 replacement=record.replacement,
                 error=False,
             )
+            # noinspection PyBroadException
+            try:
+                im = record.image.serving_url
+                record_dict['image'] = im
+            except:
+                record_dict['image'] = None
         except AttributeError:
             record_dict = {'error': True}
         record_dict['id'] = record_id
@@ -502,7 +499,6 @@ class EnterCare(BaseHandler):
     def _handle_care_supplier(supplier_data, supplier_choice):
         if supplier_choice != 'new':
             supplier = models.CareSupplier.get_by_id(int(supplier_choice))
-            supplier = models.CareSupplier
             altered = not all([
                 supplier.name == supplier_data["supplier_name"],
                 supplier.email == supplier_data["email"],

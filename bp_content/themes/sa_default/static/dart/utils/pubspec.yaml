@@ -1,0 +1,11 @@
+name: care_utils
+description: Utilities for the Care page
+dependencies:
+  intl: any
+  polymer: any
+#  angular: any
+#  angular_dart_ui_bootstrap: any
+#  polymer: any
+#transformers:
+#- polymer:
+#    entry_points: web/polytest.html
