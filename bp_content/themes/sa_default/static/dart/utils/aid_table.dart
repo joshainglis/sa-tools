@@ -234,8 +234,10 @@ class CareTable extends PolymerElement {
   CareTable.created() : super.created();
 
   @observable Map theData = toObservable({
-      'age': 0, 'sex': 'male', 'yearsLeft': 0
+      'age': 0, 'sex': 'male', 'yearsLeft': 0, 'lifeExpectancy': 0,
   });
+
+  @observable List<Map<String, Object>> tableData;
 
   Actuary actuary = new Actuary();
   TableElement careTable;
@@ -251,6 +253,7 @@ class CareTable extends PolymerElement {
   @override
   void enteredView() {
     super.enteredView();
+    HttpRequest.getString('/get_all_product_info/').then(processAllAids);
     careTable = $['careTable'];
     TableSectionElement tableHead = careTable.createTHead();
     TableSectionElement tableBody = careTable.createTBody();
@@ -275,6 +278,10 @@ class CareTable extends PolymerElement {
 
   void _addData(Map data) {
 
+  }
+
+  void processAllAids(String json) {
+    tableData = JSON.decode(json);
   }
 }
 

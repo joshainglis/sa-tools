@@ -407,6 +407,53 @@ class AjaxGetFullProductHandler(webapp2.RequestHandler):
         self.response.out.write(res)
 
 
+class AjaxGetAllProductsHandler(webapp2.RequestHandler):
+    def get(self):
+        records = Aid.query().order(Aid.name)
+        record_list = []
+        for record in records:
+            d = dict(
+                urlsafe=record.key.urlsafe(),
+                recordID=record.key.id(),
+                name=record.name,
+                supplier=record.supplier.get().name,
+                maintenance=record.maintenance,
+                replacement=record.replacement
+            )
+            try:
+                im = record.image.serving_url
+                d['image'] = im
+            except:
+                d['image'] = None
+        res = json.encode(record_list)
+        self.response.out.write(res)
+
+
+    def post(self):
+        record_id = json.decode(self.request.body).get('record_id')
+        record = Aid.get_by_id(int(record_id))
+        try:
+            record_dict = dict(
+                name=record.name,
+                cost=record.cost,
+                supplier=record.supplier.get().name,
+                maintenance=record.maintenance,
+                replacement=record.replacement,
+                error=False,
+            )
+            # noinspection PyBroadException
+            try:
+                im = record.image.serving_url
+                record_dict['image'] = im
+            except:
+                record_dict['image'] = None
+        except AttributeError:
+            record_dict = {'error': True}
+        record_dict['id'] = record_id
+        res = json.encode(record_dict)
+        self.response.out.write(res)
+
+
 class AjaxGetClientHandler(webapp2.RequestHandler):
     def post(self):
         record_id = json.decode(self.request.body).get('record_id')
@@ -451,6 +498,8 @@ class AjaxGetCareSupplierHandler(webapp2.RequestHandler):
         record_dict['id'] = record_id
         res = json.encode(record_dict)
         self.response.out.write(res)
+
+
 
 
 class EnterCare(BaseHandler):

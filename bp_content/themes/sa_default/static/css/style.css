@@ -33,3 +33,8 @@ th {
 .top-buffer {
   margin-top: 80px;
 }
+.table_image img {
+  max-width: 100px;
+  width: 100%;
+  height: auto;
+}

@@ -20,6 +20,7 @@ _routes = [
     RedirectRoute('/view_aids/', handlers.ViewAids, name='view-aids', strict_slash=True),
     RedirectRoute('/view_suppliers/', handlers.ViewSuppliers, name='view-suppliers', strict_slash=True),
     RedirectRoute('/get_full_product_info/', handlers.AjaxGetFullProductHandler, name='ajax-aids', strict_slash=True),
+    RedirectRoute('/get_all_product_info/', handlers.AjaxGetAllProductsHandler, name='ajax-all-aids', strict_slash=True),
     RedirectRoute('/get_client_info/', handlers.AjaxGetClientHandler, name='ajax-client', strict_slash=True),
     RedirectRoute('/get_care_supplier_info/', handlers.AjaxGetCareSupplierHandler, name='ajax-care-supplier', strict_slash=True),
     RedirectRoute('/upload_csv/', handlers.UploadCSV, name='upload-csv', strict_slash=True),
